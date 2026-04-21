@@ -1,0 +1,9 @@
+body{margin:0;font-family:Arial,"Microsoft YaHei";display:flex;background:#f4f7fb}
+.admin-side{width:220px;min-height:100vh;background:#102840;color:#fff;padding:20px;display:flex;flex-direction:column;gap:10px}
+.admin-side a{color:#cfe0f2;text-decoration:none;padding:8px 10px;border-radius:6px}
+.admin-side a.on,.admin-side a:hover{background:#1d4f7e;color:#fff}
+.admin-main{flex:1;padding:24px}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.cards>div{background:#fff;border:1px solid #dbe6f3;border-radius:8px;padding:16px}
+table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #dbe6f3}
+th,td{border:1px solid #dbe6f3;padding:10px;text-align:left}

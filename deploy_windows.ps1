@@ -3,10 +3,10 @@ param(
   [string]$AppDir = "$PSScriptRoot",
   [string]$MySqlExe = "mysql",
   [string]$DbHost = "127.0.0.1",
-  [string]$DbPort = "3306",
+  [string]$DbPort = "6612",
   [string]$DbUser = "root",
-  [string]$DbPassword = "123456",
-  [string]$JwtSecret = ""
+  [string]$DbPassword = "71kzgY_260420!",
+  [string]$JwtSecret = "260420_71kzgY!"
 )
 
 $ErrorActionPreference = "Stop"

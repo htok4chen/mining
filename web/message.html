@@ -1,0 +1,10 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>留言反馈</title><link rel="stylesheet" href="/assets/style.css"></head><body>
+<script src="/assets/layout.js"></script>
+<div class="container"><section class="section"><h2>留言反馈</h2><form onsubmit="siteApp.submitMessage(event)">
+<div class="form-row"><label>姓名</label><input id="msgName" required></div>
+<div class="form-row"><label>电话</label><input id="msgPhone"></div>
+<div class="form-row"><label>邮箱</label><input id="msgEmail" type="email"></div>
+<div class="form-row"><label>内容</label><textarea id="msgContent" required rows="5"></textarea></div>
+<button type="submit">提交留言</button></form></section></div>
+<script src="/assets/site.js"></script>
+</body></html>

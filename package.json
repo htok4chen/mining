@@ -1,0 +1,16 @@
+{
+  "name": "mining-info-service-platform",
+  "version": "1.0.0",
+  "description": "Mining information service platform",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "morgan": "^1.10.0",
+    "mysql2": "^3.11.3"
+  }
+}

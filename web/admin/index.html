@@ -1,0 +1,43 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>后台管理</title><link rel="stylesheet" href="/assets/style.css"></head><body>
+<script src="/assets/layout.js"></script>
+<div class="container">
+  <section class="section" id="loginBox">
+    <h2>管理员登录</h2>
+    <div class="split">
+      <div class="form-row"><label>用户名</label><input id="adminUser" value="admin"></div>
+      <div class="form-row"><label>密码</label><input id="adminPass" type="password" value="admin123"></div>
+    </div>
+    <button onclick="adminApp.login()">登录</button>
+  </section>
+
+  <section class="section" id="manageBox" style="display:none">
+    <h2>后台管理（新闻/广告/融资/专家/留言）</h2>
+    <div class="filters">
+      <select id="entity">
+        <option value="news">新闻管理</option>
+        <option value="news-categories">新闻分类</option>
+        <option value="ads-positions">广告位管理</option>
+        <option value="ads">广告管理</option>
+        <option value="experts">专家管理</option>
+        <option value="mining-categories">融资分类维护</option>
+        <option value="mining-financing">矿权融资管理</option>
+        <option value="products">产品管理</option>
+        <option value="albums">企业相册管理</option>
+        <option value="messages">留言反馈管理</option>
+      </select>
+      <button onclick="adminApp.loadList()">加载列表</button>
+    </div>
+    <div id="entityHelp" style="margin-bottom:10px;color:#5a6d84"></div>
+    <textarea id="payload" rows="10" style="width:100%" placeholder='JSON 对象，例如 {"title":"测试"}'></textarea>
+    <div class="filters">
+      <button onclick="adminApp.create()">新增</button>
+      <input id="editId" placeholder="ID">
+      <button onclick="adminApp.update()">更新ID</button>
+      <button onclick="adminApp.remove()">删除ID</button>
+      <button onclick="adminApp.loadInquiries()">融资洽谈留言记录</button>
+    </div>
+    <div id="list"></div>
+  </section>
+</div>
+<script src="/admin/panel.js"></script>
+</body></html>

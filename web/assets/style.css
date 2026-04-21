@@ -1,0 +1,35 @@
+:root { --primary:#0b5fb3; --bg:#f4f7fb; --text:#1f2d3d; }
+*{box-sizing:border-box} body{margin:0;font-family:"Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text)}
+a{text-decoration:none;color:inherit}
+.container{width:min(1200px,92%);margin:0 auto}
+.header{background:linear-gradient(90deg,#0a4f97,#0f73ce);color:#fff}
+.topbar{display:flex;justify-content:space-between;align-items:center;padding:16px 0}
+.logo{font-size:24px;font-weight:700}
+.nav{display:flex;gap:22px;padding:0 0 14px 0;flex-wrap:wrap}
+.nav a{padding:8px 14px;border-radius:4px}
+.nav a.active,.nav a:hover{background:rgba(255,255,255,.18)}
+.section{background:#fff;border-radius:8px;padding:18px;margin:16px 0;box-shadow:0 2px 12px rgba(0,0,0,.04)}
+.section h2{font-size:20px;margin:0 0 12px 0;color:var(--primary)}
+.grid{display:grid;gap:14px}
+.grid-2{grid-template-columns:2fr 1fr}
+.grid-3{grid-template-columns:repeat(3,1fr)}
+.list{padding:0;margin:0;list-style:none}
+.list li{padding:10px 0;border-bottom:1px solid #edf1f7}
+.banner img{width:100%;height:300px;object-fit:cover;border-radius:6px}
+.small-banner img{width:100%;height:160px;object-fit:cover;border-radius:6px}
+.expert-list{height:240px;overflow:hidden;position:relative}
+.expert-item{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px dashed #e4e9f1;background:#fff}
+.expert-item img{width:62px;height:62px;border-radius:50%;object-fit:cover}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.card{background:#fff;border:1px solid #e9eef7;border-radius:8px;overflow:hidden}
+.card img{width:100%;height:140px;object-fit:cover}
+.card .content{padding:10px}
+.footer{background:#083f78;color:#d6e8ff;padding:18px 0;margin-top:26px}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.filters input,.filters select,.filters textarea{padding:8px;border:1px solid #c9d6ea;border-radius:4px}
+button{border:none;background:var(--primary);color:#fff;padding:8px 14px;border-radius:4px;cursor:pointer}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{border:1px solid #e2e8f2;padding:8px;text-align:left}
+.form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:900px){.grid-2,.grid-3,.split{grid-template-columns:1fr}.expert-list{height:auto}}

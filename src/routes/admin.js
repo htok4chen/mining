@@ -1,22 +1,29 @@
-const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const db = require('../services/db');
 const auth = require('../middleware/auth');
+const { jwtSecret } = require('../config/security');
 
 const router = express.Router();
-
-const sha256 = (input) => crypto.createHash('sha256').update(input).digest('hex');
+const SAFE_TABLE = /^[a-z_]+$/i;
+const SAFE_ORDER = /^[a-z_]+(\s+(ASC|DESC))?(,\s*[a-z_]+(\s+(ASC|DESC))?)*$/i;
+const DUMMY_BCRYPT_HASH = '$2a$10$CwTycUXWue0Thq9StjUM0uJ8x8zY4xXHzkwmo7aX6ixkmKuuNHYsW';
 
 router.post('/login', async (req, res, next) => {
   try {
     const { username, password } = req.body;
     const [rows] = await db.query('SELECT id, username, password_hash, status FROM admin_user WHERE username = ? LIMIT 1', [username]);
-    if (!rows.length || rows[0].status !== 1 || rows[0].password_hash !== sha256(password || '')) {
+    const user = rows[0];
+    if (!user || user.status !== 1) return res.status(401).json({ message: '用户名或密码错误' });
+    const passwordHash = user.password_hash || '';
+    const hashForCompare = passwordHash.startsWith('$2') ? passwordHash : DUMMY_BCRYPT_HASH;
+    const passwordOk = await bcrypt.compare(password || '', hashForCompare);
+    if (!passwordOk || !passwordHash.startsWith('$2')) {
       return res.status(401).json({ message: '用户名或密码错误' });
     }
-    const token = jwt.sign({ id: rows[0].id, username: rows[0].username }, process.env.JWT_SECRET || 'change-me', { expiresIn: '12h' });
-    res.json({ token, username: rows[0].username });
+    const token = jwt.sign({ id: user.id, username: user.username }, jwtSecret, { expiresIn: '12h' });
+    res.json({ token, username: user.username });
   } catch (e) { next(e); }
 });
 
@@ -26,8 +33,11 @@ const paginate = (value, fallback) => Math.max(Number(value || fallback), 1);
 
 const listFactory = (table, orderBy = 'id DESC') => async (req, res, next) => {
   try {
+    if (!SAFE_TABLE.test(table) || !SAFE_ORDER.test(orderBy)) {
+      return res.status(500).json({ message: 'SQL配置异常' });
+    }
     const page = paginate(req.query.page, 1);
-    const pageSize = paginate(req.query.page_size, 20);
+    const pageSize = Math.min(paginate(req.query.page_size, 20), 100);
     const [rows] = await db.query(`SELECT * FROM ${table} ORDER BY ${orderBy} LIMIT ?, ?`, [(page - 1) * pageSize, pageSize]);
     const [countRows] = await db.query(`SELECT COUNT(*) AS total FROM ${table}`);
     res.json({ list: rows, total: countRows[0].total, page, pageSize });
@@ -93,7 +103,7 @@ router.get('/mining-inquiries', listFactory('mining_inquiry', 'id DESC'));
 router.put('/mining-inquiries/:id/reply', async (req, res, next) => {
   try {
     const { reply, status } = req.body;
-    await db.query('UPDATE mining_inquiry SET reply = ?, status = ?, updated_at = NOW() WHERE id = ?', [reply || null, status ?? 1, req.params.id]);
+    await db.query('UPDATE mining_inquiry SET reply = ?, status = ?, updated_at = NOW() WHERE id = ?', [reply ?? null, status ?? 1, req.params.id]);
     res.json({ message: '回复成功' });
   } catch (e) { next(e); }
 });

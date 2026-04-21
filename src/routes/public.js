@@ -3,11 +3,11 @@ const db = require('../services/db');
 
 const router = express.Router();
 
-const buildListResult = async (baseSql, whereSql, params, page, pageSize, orderSql = ' ORDER BY id DESC') => {
+const buildListResult = async (baseSql, countFromSql, whereSql, params, page, pageSize, orderSql = ' ORDER BY id DESC') => {
   const p = Math.max(Number(page || 1), 1);
-  const s = Math.max(Number(pageSize || 10), 1);
+  const s = Math.min(Math.max(Number(pageSize || 10), 1), 100);
   const sql = `${baseSql} ${whereSql}${orderSql} LIMIT ?, ?`;
-  const countSql = `SELECT COUNT(*) AS total ${whereSql}`;
+  const countSql = `SELECT COUNT(*) AS total ${countFromSql} ${whereSql}`;
   const [list] = await db.query(sql, [...params, (p - 1) * s, s]);
   const [countRows] = await db.query(countSql, params);
   return { list, total: countRows[0].total, page: p, pageSize: s };
@@ -15,7 +15,7 @@ const buildListResult = async (baseSql, whereSql, params, page, pageSize, orderS
 
 router.get('/news', async (req, res, next) => {
   try {
-    const where = ['FROM news n WHERE n.status = 1'];
+    const where = ['WHERE n.status = 1'];
     const params = [];
     if (req.query.category_id) {
       where.push('AND n.category_id = ?');
@@ -23,6 +23,7 @@ router.get('/news', async (req, res, next) => {
     }
     const data = await buildListResult(
       'SELECT n.*, c.name AS category_name FROM news n LEFT JOIN news_category c ON c.id = n.category_id',
+      'FROM news n',
       where.join(' '),
       params,
       req.query.page,
@@ -69,7 +70,7 @@ router.get('/experts', async (req, res, next) => {
 
 router.get('/mining-financing', async (req, res, next) => {
   try {
-    const where = ['FROM mining_financing mf LEFT JOIN mining_category mc ON mc.id = mf.category_id WHERE mf.status = 1'];
+    const where = ['WHERE mf.status = 1'];
     const params = [];
     if (req.query.category_id) { where.push('AND mf.category_id = ?'); params.push(req.query.category_id); }
     if (req.query.province) { where.push('AND mf.province = ?'); params.push(req.query.province); }
@@ -85,7 +86,8 @@ router.get('/mining-financing', async (req, res, next) => {
     if (req.query.sort === 'price_desc') orderSql = ' ORDER BY mf.price_ref DESC, mf.id DESC';
 
     const data = await buildListResult(
-      'SELECT mf.*, mc.name AS category_name',
+      'SELECT mf.*, mc.name AS category_name FROM mining_financing mf LEFT JOIN mining_category mc ON mc.id = mf.category_id',
+      'FROM mining_financing mf',
       where.join(' '),
       params,
       req.query.page,

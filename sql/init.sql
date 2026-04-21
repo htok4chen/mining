@@ -155,8 +155,12 @@ CREATE TABLE IF NOT EXISTS site_config (
 );
 
 INSERT INTO admin_user (username, password_hash, status)
-SELECT 'admin', SHA2('admin123', 256), 1
+SELECT 'admin', '$2a$10$g.TSLuiCncXGLuBlKVWEMusXnDvTZuq4yKonrE8nx0OlufJTvfGUW', 1
 WHERE NOT EXISTS (SELECT 1 FROM admin_user WHERE username = 'admin');
+
+UPDATE admin_user
+SET password_hash = '$2a$10$g.TSLuiCncXGLuBlKVWEMusXnDvTZuq4yKonrE8nx0OlufJTvfGUW'
+WHERE username = 'admin' AND password_hash NOT LIKE '$2%';
 
 INSERT INTO news_category (name, sort, status)
 SELECT '行业动态', 1, 1 WHERE NOT EXISTS (SELECT 1 FROM news_category WHERE name='行业动态');

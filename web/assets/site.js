@@ -107,7 +107,7 @@ async function submitMessage(e) {
   const res = await api('/api/public/messages', {
     method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
   });
-  alert((res && res.message) || '提交成功');
+  alert((res && res.message) || '留言提交成功');
   if (res) e.target.reset();
 }
 

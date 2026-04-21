@@ -73,6 +73,7 @@
 
 1. 复制环境变量
    - `copy .env.example .env`（Windows）
+   - 设置 `JWT_SECRET` 为强随机字符串（必填）
 2. 安装依赖
    - `npm install`
 3. 初始化数据库
@@ -101,4 +102,3 @@
 
 - 将 `/api` 反向代理到 Node 服务
 - 将 `/uploads` 指向 Node 静态目录（已在应用内开放）
-

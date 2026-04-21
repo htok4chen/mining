@@ -5,7 +5,8 @@ param(
   [string]$DbHost = "127.0.0.1",
   [string]$DbPort = "3306",
   [string]$DbUser = "root",
-  [string]$DbPassword = "123456"
+  [string]$DbPassword = "123456",
+  [string]$JwtSecret = ""
 )
 
 $ErrorActionPreference = "Stop"
@@ -21,4 +22,9 @@ Remove-Item Env:MYSQL_PWD -ErrorAction SilentlyContinue
 
 Write-Host "[3/3] Starting service..."
 $env:NODE_ENV = $NodeEnv
+if ([string]::IsNullOrWhiteSpace($JwtSecret)) {
+  $JwtSecret = ([guid]::NewGuid().ToString("N") + [guid]::NewGuid().ToString("N"))
+  Write-Host "JWT secret not provided, generated one for current session."
+}
+$env:JWT_SECRET = $JwtSecret
 node "$AppDir\src\app.js"

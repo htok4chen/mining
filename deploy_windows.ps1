@@ -1,7 +1,7 @@
 param(
   [string]$NodeEnv = "production",
   [string]$AppDir = "$PSScriptRoot",
-  [string]$MySqlExe = "mysql80",
+  [string]$MySqlExe = "C:\Program Files\MySQL\MySQL Server 8.0\bin\mysql.exe",
   [string]$DbHost = "127.0.0.1",
   [string]$DbPort = "6612",
   [string]$DbUser = "root",

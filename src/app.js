@@ -11,7 +11,7 @@ const adminRoutes = require('./routes/admin');
 require('./config/security');
 
 const app = express();
-const port = Number(process.env.PORT || 9080);
+const port = Number(process.env.PORT || 9008);
 const webRoot = path.join(__dirname, '..', 'web');
 const uploadsRoot = path.join(__dirname, '..', 'uploads');
 const apiLimiter = rateLimit({

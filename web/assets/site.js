@@ -1,8 +1,14 @@
 const $ = (s) => document.querySelector(s);
 const api = async (url, options) => {
   const r = await fetch(url, options);
-  const data = await r.json();
+  const ct = r.headers.get('content-type') || '';
+  if (!ct.includes('application/json')) {
+    const text = await r.text();
+    console.error(`API error (${r.status}) at ${url}: ${text.slice(0, 200)}`);
+    return null;
+  }
   if (!r.ok) return null;
+  const data = await r.json();
   return data;
 };
 

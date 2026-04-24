@@ -81,8 +81,8 @@
 4. 启动服务
    - `node src/app.js`
 5. 访问页面
-   - 前台：`http://localhost:9080/`
-   - 后台：`http://localhost:9080/admin/`
+   - 前台：`http://localhost:9008/`
+   - 后台：`http://localhost:9008/admin/`
 
 默认管理员：
 - 用户名：`admin`

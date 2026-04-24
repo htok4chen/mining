@@ -45,6 +45,20 @@ router.get('/news/:id', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+router.get('/ads/:id', async (req, res, next) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT a.* FROM ads a
+       WHERE a.id = ? AND a.status = 1
+       AND (a.start_time IS NULL OR a.start_time <= NOW())
+       AND (a.end_time IS NULL OR a.end_time >= NOW())`,
+      [req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ message: '广告不存在或已下线' });
+    res.json(rows[0]);
+  } catch (e) { next(e); }
+});
+
 router.get('/ads', async (req, res, next) => {
   try {
     const position = req.query.position || 'home_banner';
@@ -61,10 +75,29 @@ router.get('/ads', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+router.get('/experts/:id', async (req, res, next) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM expert WHERE id = ? AND status = 1', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ message: '专家不存在' });
+    res.json(rows[0]);
+  } catch (e) { next(e); }
+});
+
 router.get('/experts', async (req, res, next) => {
   try {
     const [rows] = await db.query('SELECT * FROM expert WHERE status = 1 ORDER BY sort ASC, id DESC');
     res.json(rows);
+  } catch (e) { next(e); }
+});
+
+router.get('/mining-financing/:id', async (req, res, next) => {
+  try {
+    const [rows] = await db.query(
+      'SELECT mf.*, mc.name AS category_name FROM mining_financing mf LEFT JOIN mining_category mc ON mc.id = mf.category_id WHERE mf.id = ? AND mf.status = 1',
+      [req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ message: '融资项目不存在' });
+    res.json(rows[0]);
   } catch (e) { next(e); }
 });
 
@@ -98,10 +131,26 @@ router.get('/mining-financing', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+router.get('/albums/:id', async (req, res, next) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM album WHERE id = ? AND status = 1', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ message: '相册不存在' });
+    res.json(rows[0]);
+  } catch (e) { next(e); }
+});
+
 router.get('/albums', async (req, res, next) => {
   try {
     const [rows] = await db.query('SELECT * FROM album WHERE status = 1 ORDER BY sort ASC, id DESC');
     res.json(rows);
+  } catch (e) { next(e); }
+});
+
+router.get('/products/:id', async (req, res, next) => {
+  try {
+    const [rows] = await db.query('SELECT * FROM product WHERE id = ? AND status = 1', [req.params.id]);
+    if (!rows.length) return res.status(404).json({ message: '产品不存在' });
+    res.json(rows[0]);
   } catch (e) { next(e); }
 });
 

@@ -5,11 +5,14 @@
 ## 1. 已实现模块清单
 
 ### 前台（静态站点）
-- 首页（logo+导航、广告位、新闻局部、专家滚动展示、矿权融资筛选与列表）
+- 首页（logo+导航、广告位、新闻列表、专家滚动展示、矿权融资筛选与列表）
 - 关于我们
-- 产品展示
-- 新闻资讯
-- 企业相册
+- 产品展示（含详情页 `/product-detail.html?id=...`）
+- 新闻资讯（含详情页 `/news-detail.html?id=...`）
+- 企业相册（含详情页 `/album-detail.html?id=...`）
+- 专家详情页（`/expert-detail.html?id=...`）
+- 融资项目详情页（`/finance-detail.html?id=...`，含在线洽谈表单）
+- 广告详情页（`/ad-detail.html?id=...`）
 - 留言反馈
 - 联系我们
 
@@ -43,15 +46,20 @@
 ## 3. API 清单
 
 ### Public API
-- `GET /api/public/news`
-- `GET /api/public/news/:id`
-- `GET /api/public/ads?position=...`
-- `GET /api/public/experts`
-- `GET /api/public/mining-financing`
-- `GET /api/public/albums`
-- `GET /api/public/products`
-- `POST /api/public/messages`
-- `POST /api/public/mining-inquiries`
+- `GET /api/public/news` — 新闻列表（支持 `category_id`、`page`、`page_size`）
+- `GET /api/public/news/:id` — 新闻详情
+- `GET /api/public/ads?position=...` — 广告列表（按位置）
+- `GET /api/public/ads/:id` — 广告详情
+- `GET /api/public/experts` — 专家列表
+- `GET /api/public/experts/:id` — 专家详情
+- `GET /api/public/mining-financing` — 矿权融资列表（支持 `category_id`、`province`、`city`、`keyword`、`sort`、`page`、`page_size`）
+- `GET /api/public/mining-financing/:id` — 融资项目详情
+- `GET /api/public/albums` — 相册列表
+- `GET /api/public/albums/:id` — 相册详情
+- `GET /api/public/products` — 产品列表
+- `GET /api/public/products/:id` — 产品详情
+- `POST /api/public/messages` — 提交留言
+- `POST /api/public/mining-inquiries` — 提交融资洽谈
 
 ### Admin API（需登录）
 - `POST /api/admin/login`

@@ -1,43 +1,76 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>后台管理</title><link rel="stylesheet" href="/assets/style.css"></head><body>
-<script src="/assets/layout.js"></script>
-<div class="container">
-  <section class="section" id="loginBox">
-    <h2>管理员登录</h2>
-    <div class="split">
-      <div class="form-row"><label>用户名</label><input id="adminUser" value="admin"></div>
-      <div class="form-row"><label>密码</label><input id="adminPass" type="password" value="admin123"></div>
-    </div>
-    <button onclick="adminApp.login()">登录</button>
-  </section>
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>后台管理系统 — 矿业信息服务平台</title><link rel="stylesheet" href="/assets/admin.css"></head>
+<body>
 
-  <section class="section" id="manageBox" style="display:none">
-    <h2>后台管理（新闻/广告/融资/专家/留言）</h2>
-    <div class="filters">
-      <select id="entity">
-        <option value="news">新闻管理</option>
-        <option value="news-categories">新闻分类</option>
-        <option value="ads-positions">广告位管理</option>
-        <option value="ads">广告管理</option>
-        <option value="experts">专家管理</option>
-        <option value="mining-categories">融资分类维护</option>
-        <option value="mining-financing">矿权融资管理</option>
-        <option value="products">产品管理</option>
-        <option value="albums">企业相册管理</option>
-        <option value="messages">留言反馈管理</option>
-      </select>
-      <button onclick="adminApp.loadList()">加载列表</button>
+<!-- ========= Login Page ========= -->
+<div id="loginPage" class="adm-login-page">
+  <div class="adm-login-box">
+    <div class="adm-login-logo">
+      <h1>⛏ 矿业管理平台</h1>
+      <p>请使用管理员账号登录</p>
     </div>
-    <div id="entityHelp" style="margin-bottom:10px;color:#5a6d84"></div>
-    <textarea id="payload" rows="10" style="width:100%" placeholder='JSON 对象，例如 {"title":"测试"}'></textarea>
-    <div class="filters">
-      <button onclick="adminApp.create()">新增</button>
-      <input id="editId" placeholder="ID">
-      <button onclick="adminApp.update()">更新ID</button>
-      <button onclick="adminApp.remove()">删除ID</button>
-      <button onclick="adminApp.loadInquiries()">融资洽谈留言记录</button>
-    </div>
-    <div id="list"></div>
-  </section>
+    <div class="adm-form-row"><label>用户名</label><input id="loginUser" class="adm-input" type="text" value="admin" placeholder="请输入用户名" autocomplete="username"></div>
+    <div class="adm-form-row"><label>密码</label><input id="loginPass" class="adm-input" type="password" placeholder="请输入密码" autocomplete="current-password"></div>
+    <div id="loginErr" style="color:#c0392b;font-size:13px;margin-bottom:8px;min-height:18px"></div>
+    <button class="btn-login" id="btnLogin" onclick="adminApp.login()">登录</button>
+  </div>
 </div>
+
+<!-- ========= Admin Layout ========= -->
+<div id="adminPage" class="adm-layout" style="display:none">
+
+  <!-- Sidebar -->
+  <aside class="adm-sidebar">
+    <div class="adm-sidebar-logo">⛏ 矿业管理平台<small>后台管理系统</small></div>
+    <nav class="adm-nav" id="admNav"></nav>
+  </aside>
+
+  <!-- Content -->
+  <div class="adm-content">
+    <header class="adm-header">
+      <div class="adm-breadcrumb" id="admBreadcrumb">首页</div>
+      <div class="adm-header-right">
+        <span>👤 <span id="admUsername"></span></span>
+        <button class="btn-logout" onclick="adminApp.logout()">退出登录</button>
+      </div>
+    </header>
+    <main class="adm-main" id="admMain">
+      <div class="adm-empty"><div class="adm-empty-icon">👈</div><div>请从左侧菜单选择要管理的模块</div></div>
+    </main>
+  </div>
+</div>
+
+<!-- ========= Form / Edit Modal ========= -->
+<div id="admModal" class="adm-modal-overlay" style="display:none">
+  <div class="adm-modal">
+    <div class="adm-modal-hdr">
+      <span id="admModalTitle">操作</span>
+      <button class="adm-modal-close" onclick="adminApp.closeModal()" title="关闭">×</button>
+    </div>
+    <div class="adm-modal-body" id="admModalBody"></div>
+    <div class="adm-modal-ftr">
+      <button class="btn-default" onclick="adminApp.closeModal()">取消</button>
+      <button class="btn-primary" id="admModalSubmit">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========= Confirm Dialog ========= -->
+<div id="admConfirm" class="adm-modal-overlay" style="display:none">
+  <div class="adm-modal adm-modal-sm">
+    <div class="adm-modal-hdr">
+      <span>⚠️ 确认操作</span>
+      <button class="adm-modal-close" onclick="adminApp.closeConfirm()">×</button>
+    </div>
+    <div class="adm-modal-body" id="admConfirmMsg" style="padding:20px 20px 10px">确认要执行此操作吗？</div>
+    <div class="adm-modal-ftr">
+      <button class="btn-default" onclick="adminApp.closeConfirm()">取消</button>
+      <button class="btn-danger" id="admConfirmOk">确认</button>
+    </div>
+  </div>
+</div>
+
+<!-- ========= Toast Container ========= -->
+<div id="admToasts" class="adm-toasts"></div>
+
 <script src="/admin/panel.js"></script>
 </body></html>

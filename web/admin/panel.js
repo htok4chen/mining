@@ -363,6 +363,7 @@ const adminApp = (() => {
     if (!v) return '-';
     try {
       const d = new Date(v);
+      if (isNaN(d.getTime())) return String(v);
       return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
     } catch (e) { return String(v); }
   };
@@ -758,7 +759,12 @@ const adminApp = (() => {
       input = `<textarea name="${f.k}" class="adm-input" rows="${f.rows || 3}" placeholder="${esc(f.ph || '')}"${req}>${esc(v != null ? v : '')}</textarea>`;
     } else if (f.type === 'datetime-local') {
       let dtv = '';
-      if (v) { try { dtv = new Date(v).toISOString().slice(0, 16); } catch (e2) { /* ignore */ } }
+      if (v) {
+        try {
+          const d = new Date(v);
+          if (!isNaN(d.getTime())) dtv = d.toISOString().slice(0, 16);
+        } catch (e2) { /* ignore */ }
+      }
       input = `<input type="datetime-local" name="${f.k}" class="adm-input" value="${esc(dtv)}"${req}>`;
     } else {
       input = `<input type="${f.type}" name="${f.k}" class="adm-input" value="${esc(v != null ? v : '')}" placeholder="${esc(f.ph || '')}"${req}>`;
@@ -781,7 +787,17 @@ const adminApp = (() => {
       } else {
         el.classList.remove('invalid');
         if (v !== '') {
-          data[f.k] = f.type === 'number' ? (parseFloat(v) || 0) : v;
+          if (f.type === 'number') {
+            const num = parseFloat(v);
+            if (isNaN(num)) {
+              errors.push(`${f.l} 请输入有效数字`);
+              el.classList.add('invalid');
+            } else {
+              data[f.k] = num;
+            }
+          } else {
+            data[f.k] = v;
+          }
         }
       }
     });

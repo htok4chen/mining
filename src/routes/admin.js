@@ -30,7 +30,7 @@ router.post('/login', async (req, res, next) => {
 router.use(auth);
 
 const paginate = (value, fallback) => Math.max(Number(value || fallback), 1);
-const SAFE_COL = /^[a-z_]+$/i;
+const SAFE_COLUMN_NAME = /^[a-z_]+$/i;
 
 const listFactory = (table, orderBy = 'id DESC', filterCols = []) => async (req, res, next) => {
   try {
@@ -42,7 +42,7 @@ const listFactory = (table, orderBy = 'id DESC', filterCols = []) => async (req,
     const where = [];
     const params = [];
     filterCols.forEach((col) => {
-      if (!SAFE_COL.test(col)) return;
+      if (!SAFE_COLUMN_NAME.test(col)) return;
       const val = req.query[col];
       if (val !== undefined && val !== '') {
         where.push(`${col} = ?`);

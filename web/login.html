@@ -1,0 +1,59 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>用户登录 - 矿业信息服务平台</title><link rel="stylesheet" href="/assets/style.css"></head><body>
+<script src="/assets/layout.js"></script>
+<div class="container">
+  <div class="auth-wrap">
+    <div class="auth-box">
+      <h2>用户登录</h2>
+      <form id="loginForm" class="auth-form" onsubmit="handleLogin(event)" novalidate>
+        <div class="form-row">
+          <label for="loginUser">用户名<span class="req">*</span></label>
+          <input id="loginUser" type="text" class="form-input" required placeholder="请输入用户名" autocomplete="username">
+        </div>
+        <div class="form-row">
+          <label for="loginPass">密码<span class="req">*</span></label>
+          <input id="loginPass" type="password" class="form-input" required placeholder="请输入密码" autocomplete="current-password">
+        </div>
+        <div id="loginErr" class="form-err"></div>
+        <button type="submit" class="btn-full">登录</button>
+        <p class="auth-switch">还没有账号？<a href="/register.html">立即注册</a></p>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="/assets/site.js"></script>
+<script>
+(function () {
+  if (localStorage.getItem('user_token')) { location.replace('/index.html'); return; }
+
+  async function handleLogin(e) {
+    e.preventDefault();
+    const err = document.getElementById('loginErr');
+    err.textContent = '';
+    const username = document.getElementById('loginUser').value.trim();
+    const password = document.getElementById('loginPass').value;
+    if (!username) { err.textContent = '请输入用户名'; return; }
+    if (!password) { err.textContent = '请输入密码'; return; }
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true; btn.textContent = '登录中…';
+    try {
+      const r = await fetch('/api/public/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ account_username: username, password })
+      });
+      const data = await r.json();
+      if (!r.ok) { err.textContent = data.message || '登录失败'; return; }
+      localStorage.setItem('user_token', data.token);
+      localStorage.setItem('user_name', data.real_name || data.account_username);
+      location.replace('/index.html');
+    } catch (_) {
+      err.textContent = '网络错误，请稍后重试';
+    } finally {
+      btn.disabled = false; btn.textContent = '登录';
+    }
+  }
+
+  window.handleLogin = handleLogin;
+})();
+</script>
+</body></html>

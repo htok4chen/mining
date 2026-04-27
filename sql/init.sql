@@ -224,3 +224,25 @@ WHERE NOT EXISTS (SELECT 1 FROM album WHERE title='企业活动');
 
 INSERT INTO site_config (config_key, config_value)
 SELECT 'site_name', '矿业信息服务平台' WHERE NOT EXISTS (SELECT 1 FROM site_config WHERE config_key='site_name');
+
+CREATE TABLE IF NOT EXISTS end_user (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  account_username VARCHAR(50) NOT NULL UNIQUE,
+  password_hash VARCHAR(100) NOT NULL,
+  real_name VARCHAR(100) NOT NULL,
+  gender ENUM('男','女','未设置') NOT NULL DEFAULT '未设置',
+  title_or_position VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  phone VARCHAR(50) NOT NULL UNIQUE,
+  landline_country_code VARCHAR(10) NULL,
+  landline_area_code VARCHAR(10) NULL,
+  landline_number VARCHAR(30) NULL,
+  fax_country_code VARCHAR(10) NULL,
+  fax_area_code VARCHAR(10) NULL,
+  fax_number VARCHAR(30) NULL,
+  company_name VARCHAR(200) NOT NULL,
+  business_scope VARCHAR(500) NULL,
+  status TINYINT NOT NULL DEFAULT 1,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

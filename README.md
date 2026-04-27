@@ -17,6 +17,8 @@
 - 广告详情页（`/ad-detail.html?id=...`）
 - 留言反馈
 - 联系我们
+- **用户登录页**（`/login.html`）
+- **用户注册页**（`/register.html`）
 
 ### 后台（/admin）
 
@@ -38,6 +40,7 @@
 |           | 企业相册              | 列表、新增、编辑、删除、启停            |
 | 留言与咨询 | 留言反馈              | 列表、搜索（状态）、查看、回复/处理、删除  |
 |           | 融资洽谈              | 列表、搜索（状态）、查看、回复/处理       |
+| 用户管理   | 注册用户              | 列表、搜索（状态）、查看详情、启用/禁用    |
 
 #### 普通管理员操作流程
 
@@ -50,6 +53,7 @@
 7. **启停**：点击「启用」/「停用」按钮，即时切换发布状态。
 8. **搜索**：部分模块顶部有搜索栏（分类、省份、状态等），填写后点击「搜索」；点击「重置」清除条件。
 9. **留言/洽谈**：点击「处理/回复」按钮，可查看原始内容并填写回复，同时切换处理状态。
+10. **注册用户**：点击「查看」查看完整注册信息；点击「启用」/「停用」启停用户账号。
 
 #### 交互设计说明
 
@@ -75,6 +79,7 @@
 - `album`
 - `message_feedback`
 - `site_config`
+- `end_user`（注册用户表）
 
 > 初始化 SQL：`/sql/init.sql`（含种子数据）
 
@@ -96,6 +101,12 @@
 - `POST /api/public/messages` — 提交留言
 - `POST /api/public/mining-inquiries` — 提交融资洽谈
 
+### Public Auth API（用户注册与登录）
+- `POST /api/public/auth/register` — 用户注册（返回 `{ message, id }`）
+- `POST /api/public/auth/login` — 用户登录（返回 `{ token, account_username, real_name }`，限频：15 分钟内最多 20 次）
+- `GET  /api/public/auth/me` — 获取当前用户信息（需 Bearer Token，role=user）
+- `POST /api/public/auth/logout` — 退出登录（仅服务端确认；客户端删除 localStorage 中的 `user_token` / `user_name`）
+
 ### Admin API（需登录）
 - `POST /api/admin/login`
 - CRUD：
@@ -111,12 +122,15 @@
   - `/api/admin/messages`
 - `GET /api/admin/mining-inquiries`
 - `PUT /api/admin/mining-inquiries/:id/reply`
+- `GET /api/admin/end-users` — 注册用户列表（支持 `status`、`page`、`page_size`）
+- `GET /api/admin/end-users/:id` — 注册用户详情
+- `PUT /api/admin/end-users/:id` — 更新用户状态（仅接受 `{ status: 0|1 }`）
 
 ## 4. 本地运行步骤
 
 1. 复制环境变量
    - `copy .env.example .env`（Windows）
-   - 设置 `JWT_SECRET` 为强随机字符串（必填）
+   - 设置 `JWT_SECRET` 为强随机字符串（**必填**，不能为 `change-me`）
 2. 安装依赖
    - `npm install`
 3. 初始化数据库
@@ -125,13 +139,37 @@
    - `node src/app.js`
 5. 访问页面
    - 前台：`http://localhost:9080/`
+   - 前台登录：`http://localhost:9080/login.html`
+   - 前台注册：`http://localhost:9080/register.html`
    - 后台：`http://localhost:9080/admin/`
 
 默认管理员：
 - 用户名：`admin`
 - 密码：`admin123`
 
-## 5. Windows 部署脚本
+### 必要环境变量
+
+| 变量名        | 说明                              | 示例                       |
+|-------------|--------------------------------|--------------------------|
+| `PORT`      | 服务端口（可选，默认 9008）           | `9008`                   |
+| `DB_HOST`   | MySQL 主机地址                     | `127.0.0.1`              |
+| `DB_PORT`   | MySQL 端口                        | `3306`                   |
+| `DB_USER`   | MySQL 用户名                      | `root`                   |
+| `DB_PASSWORD` | MySQL 密码                      | `yourpassword`           |
+| `DB_NAME`   | 数据库名                           | `mining`                 |
+| `JWT_SECRET` | JWT 签名密钥（**必须设置为强随机字符串**） | `your-strong-secret-key` |
+
+## 5. 验收清单
+
+- [ ] **成功注册**：访问 `/register.html`，填写所有必填项，点击「注册」，跳转到登录页并提示成功
+- [ ] **重复注册检测**：再次用同一用户名/邮箱/手机注册，显示友好错误提示
+- [ ] **成功登录**：在 `/login.html` 输入正确账号密码，跳转首页，导航栏显示用户名
+- [ ] **me 接口鉴权**：带正确 Token 请求 `GET /api/public/auth/me` 返回用户信息；不带或过期 Token 返回 401
+- [ ] **管理员用户列表**：在后台「用户管理 → 注册用户」看到已注册用户列表
+- [ ] **查看用户详情**：点击「查看」弹出完整注册信息
+- [ ] **启用/禁用账号**：点击「停用」后再登录返回 401，点击「启用」后可正常登录
+
+## 6. Windows 部署脚本
 
 - 依赖提示：`install_prerequisites_windows_offline.ps1`
 - 部署入口：`deploy_windows.ps1`
@@ -141,7 +179,7 @@
 2. 导入 `sql/init.sql`
 3. 启动 `node src/app.js`
 
-## 6. IIS 反向代理建议
+## 7. IIS 反向代理建议
 
 - 将 `/api` 反向代理到 Node 服务
 - 将 `/uploads` 指向 Node 静态目录（已在应用内开放）

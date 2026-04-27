@@ -120,4 +120,28 @@ router.put('/mining-inquiries/:id/reply', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+router.get('/end-users', listFactory('end_user', 'id DESC', ['status']));
+router.get('/end-users/:id', async (req, res, next) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT id, account_username, real_name, gender, title_or_position,
+              email, phone, landline_country_code, landline_area_code, landline_number,
+              fax_country_code, fax_area_code, fax_number,
+              company_name, business_scope, status, created_at, updated_at
+       FROM end_user WHERE id = ?`,
+      [req.params.id]
+    );
+    if (!rows.length) return res.status(404).json({ message: '用户不存在' });
+    res.json(rows[0]);
+  } catch (e) { next(e); }
+});
+router.put('/end-users/:id', async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    if (status !== 0 && status !== 1) return res.status(400).json({ message: '状态值无效' });
+    await db.query('UPDATE end_user SET status = ?, updated_at = NOW() WHERE id = ?', [status, req.params.id]);
+    res.json({ message: status === 1 ? '账号已启用' : '账号已禁用' });
+  } catch (e) { next(e); }
+});
+
 module.exports = router;

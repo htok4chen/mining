@@ -8,6 +8,7 @@ const fs = require('fs');
 const db = require('./services/db');
 const publicRoutes = require('./routes/public');
 const adminRoutes = require('./routes/admin');
+const authRoutes = require('./routes/auth');
 require('./config/security');
 
 const app = express();
@@ -35,8 +36,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/api', apiLimiter);
 app.use('/api/admin/login', loginLimiter);
+app.use('/api/public/auth/login', loginLimiter);
 
 app.use('/uploads', express.static(uploadsRoot));
+app.use('/api/public/auth', authRoutes);
 app.use('/api/public', publicRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/admin', express.static(path.join(webRoot, 'admin')));

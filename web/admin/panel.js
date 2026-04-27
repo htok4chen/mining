@@ -63,6 +63,12 @@ const adminApp = (() => {
         { key: 'mining-inquiries', label: '融资洽谈' },
       ],
     },
+    {
+      id: 'users', label: '用户管理', icon: '🧑‍💼',
+      items: [
+        { key: 'end-users', label: '注册用户' },
+      ],
+    },
   ];
 
   // =====================================================
@@ -342,6 +348,43 @@ const adminApp = (() => {
       ],
       replyApi:    (id) => `mining-inquiries/${id}/reply`,
       replyMethod: 'PUT',
+    },
+
+    'end-users': {
+      label: '注册用户',
+      api: 'end-users',
+      canCreate: false,
+      canDelete: false,
+      canToggle: true,
+      searchFields: [
+        { k: 'status', l: '状态', type: 'select', opts: [{ v: '', l: '全部状态' }, { v: 1, l: '正常' }, { v: 0, l: '已禁用' }] },
+      ],
+      listCols: [
+        { k: 'id',               l: 'ID',     w: '60px' },
+        { k: 'account_username', l: '用户名' },
+        { k: 'real_name',        l: '姓名' },
+        { k: 'company_name',     l: '单位',   trunc: true },
+        { k: 'phone',            l: '手机' },
+        { k: 'status',           l: '状态',   badge: 'status' },
+        { k: 'created_at',       l: '注册时间', date: true },
+      ],
+      viewFields: [
+        { k: 'account_username',    l: '用户名' },
+        { k: 'real_name',           l: '姓名' },
+        { k: 'gender',              l: '性别' },
+        { k: 'title_or_position',   l: '职务 / 职称' },
+        { k: 'email',               l: '邮箱' },
+        { k: 'phone',               l: '手机' },
+        { k: 'landline_country_code', l: '固话国家代码' },
+        { k: 'landline_area_code',  l: '固话区号' },
+        { k: 'landline_number',     l: '固话号码' },
+        { k: 'fax_country_code',    l: '传真国家代码' },
+        { k: 'fax_area_code',       l: '传真区号' },
+        { k: 'fax_number',          l: '传真号码' },
+        { k: 'company_name',        l: '单位名称' },
+        { k: 'business_scope',      l: '业务范围' },
+        { k: 'created_at',          l: '注册时间' },
+      ],
     },
   };
 

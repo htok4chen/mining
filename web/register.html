@@ -1,0 +1,182 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>用户注册 - 矿业信息服务平台</title><link rel="stylesheet" href="/assets/style.css"></head><body>
+<script src="/assets/layout.js"></script>
+<div class="container">
+  <div class="auth-wrap" style="padding:24px 0 40px">
+    <div class="auth-box" style="max-width:600px">
+      <h2>用户注册</h2>
+      <form id="registerForm" class="auth-form" onsubmit="handleRegister(event)" novalidate>
+
+        <div class="form-group-title">账号信息</div>
+        <div class="form-row">
+          <label for="regUser">用户名<span class="req">*</span></label>
+          <input id="regUser" type="text" class="form-input" required placeholder="3-50 个字符，仅含字母/数字/下划线" autocomplete="username">
+        </div>
+        <div class="split">
+          <div class="form-row">
+            <label for="regPass">密码<span class="req">*</span></label>
+            <input id="regPass" type="password" class="form-input" required placeholder="不少于 6 位" autocomplete="new-password">
+          </div>
+          <div class="form-row">
+            <label for="regPass2">确认密码<span class="req">*</span></label>
+            <input id="regPass2" type="password" class="form-input" required placeholder="再次输入密码" autocomplete="new-password">
+          </div>
+        </div>
+
+        <div class="form-group-title">个人信息</div>
+        <div class="split">
+          <div class="form-row">
+            <label for="regName">姓名<span class="req">*</span></label>
+            <input id="regName" type="text" class="form-input" required placeholder="请输入真实姓名">
+          </div>
+          <div class="form-row">
+            <label for="regGender">性别</label>
+            <select id="regGender" class="form-input">
+              <option value="未设置">未设置</option>
+              <option value="男">男</option>
+              <option value="女">女</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <label for="regTitle">职务 / 职称<span class="req">*</span></label>
+          <input id="regTitle" type="text" class="form-input" required placeholder="如：总经理、高级工程师">
+        </div>
+        <div class="split">
+          <div class="form-row">
+            <label for="regEmail">邮箱<span class="req">*</span></label>
+            <input id="regEmail" type="email" class="form-input" required placeholder="请输入常用邮箱">
+          </div>
+          <div class="form-row">
+            <label for="regPhone">手机号<span class="req">*</span></label>
+            <input id="regPhone" type="tel" class="form-input" required placeholder="请输入手机号码">
+          </div>
+        </div>
+
+        <div class="form-group-title">固定电话（选填）</div>
+        <div class="inline-3">
+          <div class="form-row">
+            <label for="regLdCC">国家代码</label>
+            <input id="regLdCC" type="text" class="form-input" placeholder="如：+86">
+          </div>
+          <div class="form-row">
+            <label for="regLdArea">区号</label>
+            <input id="regLdArea" type="text" class="form-input" placeholder="如：010">
+          </div>
+          <div class="form-row">
+            <label for="regLdNum">电话号码</label>
+            <input id="regLdNum" type="text" class="form-input" placeholder="如：88886666">
+          </div>
+        </div>
+
+        <div class="form-group-title">传真（选填）</div>
+        <div class="inline-3">
+          <div class="form-row">
+            <label for="regFxCC">国家代码</label>
+            <input id="regFxCC" type="text" class="form-input" placeholder="如：+86">
+          </div>
+          <div class="form-row">
+            <label for="regFxArea">区号</label>
+            <input id="regFxArea" type="text" class="form-input" placeholder="如：010">
+          </div>
+          <div class="form-row">
+            <label for="regFxNum">传真号码</label>
+            <input id="regFxNum" type="text" class="form-input" placeholder="如：88886667">
+          </div>
+        </div>
+
+        <div class="form-group-title">单位信息</div>
+        <div class="form-row">
+          <label for="regCompany">单位名称<span class="req">*</span></label>
+          <input id="regCompany" type="text" class="form-input" required placeholder="请输入所在单位全称">
+        </div>
+        <div class="form-row">
+          <label for="regScope">业务范围</label>
+          <textarea id="regScope" class="form-input" rows="3" placeholder="请简述主要业务范围（选填）"></textarea>
+        </div>
+
+        <div id="regErr" class="form-err"></div>
+        <div id="regOk" class="form-ok"></div>
+        <button type="submit" class="btn-full">注册</button>
+        <p class="auth-switch">已有账号？<a href="/login.html">立即登录</a></p>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="/assets/site.js"></script>
+<script>
+(function () {
+  if (localStorage.getItem('user_token')) { location.replace('/index.html'); return; }
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    const err = document.getElementById('regErr');
+    const ok  = document.getElementById('regOk');
+    err.textContent = ''; ok.textContent = '';
+
+    const username  = document.getElementById('regUser').value.trim();
+    const password  = document.getElementById('regPass').value;
+    const password2 = document.getElementById('regPass2').value;
+    const realName  = document.getElementById('regName').value.trim();
+    const gender    = document.getElementById('regGender').value;
+    const title     = document.getElementById('regTitle').value.trim();
+    const email     = document.getElementById('regEmail').value.trim();
+    const phone     = document.getElementById('regPhone').value.trim();
+    const company   = document.getElementById('regCompany').value.trim();
+    const scope     = document.getElementById('regScope').value.trim();
+    const ldCC      = document.getElementById('regLdCC').value.trim();
+    const ldArea    = document.getElementById('regLdArea').value.trim();
+    const ldNum     = document.getElementById('regLdNum').value.trim();
+    const fxCC      = document.getElementById('regFxCC').value.trim();
+    const fxArea    = document.getElementById('regFxArea').value.trim();
+    const fxNum     = document.getElementById('regFxNum').value.trim();
+
+    if (!username)  { err.textContent = '请输入用户名'; return; }
+    if (username.length < 3 || username.length > 50) { err.textContent = '用户名长度须为 3-50 个字符'; return; }
+    if (!password)  { err.textContent = '请输入密码'; return; }
+    if (password.length < 6) { err.textContent = '密码不得少于 6 位'; return; }
+    if (password !== password2) { err.textContent = '两次输入的密码不一致'; return; }
+    if (!realName)  { err.textContent = '请输入姓名'; return; }
+    if (!title)     { err.textContent = '请输入职务 / 职称'; return; }
+    if (!email)     { err.textContent = '请输入邮箱'; return; }
+    const emailParts = email.split('@');
+    if (emailParts.length !== 2 || !emailParts[0] || !emailParts[1].includes('.')) { err.textContent = '邮箱格式不正确'; return; }
+    if (!phone)     { err.textContent = '请输入手机号'; return; }
+    if (!company)   { err.textContent = '请输入单位名称'; return; }
+
+    const btn = e.target.querySelector('button[type=submit]');
+    btn.disabled = true; btn.textContent = '注册中…';
+
+    const payload = {
+      account_username: username, password,
+      real_name: realName, gender, title_or_position: title,
+      email, phone, company_name: company,
+      business_scope: scope,
+      landline_country_code: ldCC,
+      landline_area_code: ldArea,
+      landline_number: ldNum,
+      fax_country_code: fxCC,
+      fax_area_code: fxArea,
+      fax_number: fxNum
+    };
+
+    try {
+      const r = await fetch('/api/public/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await r.json();
+      if (!r.ok) { err.textContent = data.message || '注册失败，请稍后重试'; return; }
+      ok.textContent = '注册成功！正在跳转到登录页…';
+      setTimeout(() => location.replace('/login.html'), 1500);
+    } catch (_) {
+      err.textContent = '网络错误，请稍后重试';
+    } finally {
+      btn.disabled = false; btn.textContent = '注册';
+    }
+  }
+
+  window.handleRegister = handleRegister;
+})();
+</script>
+</body></html>

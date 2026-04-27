@@ -39,4 +39,23 @@ button{border:none;background:var(--primary);color:#fff;padding:8px 14px;border-
 .table th,.table td{border:1px solid #e2e8f2;padding:8px;text-align:left}
 .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
 .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media (max-width:900px){.grid-2,.grid-3,.split{grid-template-columns:1fr}.expert-list{height:auto}}
+.nav-user-area{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.nav-auth-btn{padding:5px 12px;border-radius:4px;color:#fff;font-size:13px;border:1px solid rgba(255,255,255,.5);cursor:pointer;white-space:nowrap}
+.nav-auth-btn:hover,.nav-auth-btn.active{background:rgba(255,255,255,.2)}
+.nav-user-name{color:rgba(255,255,255,.9);font-size:13px;white-space:nowrap}
+.auth-wrap{display:flex;justify-content:center;padding:40px 0}
+.auth-box{background:#fff;border-radius:10px;box-shadow:0 4px 24px rgba(0,0,0,.08);padding:36px 40px;width:100%;max-width:520px}
+.auth-box h2{margin:0 0 24px;color:var(--primary);font-size:22px;text-align:center}
+.auth-form .form-row label{font-size:14px;color:#4a5568;font-weight:500}
+.form-input{padding:9px 12px;border:1px solid #c9d6ea;border-radius:5px;font-size:14px;width:100%;outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--primary)}
+.form-input.invalid{border-color:#e53e3e}
+.form-err{color:#e53e3e;font-size:13px;min-height:18px;margin-bottom:4px}
+.form-ok{color:#38a169;font-size:13px;min-height:18px;margin-bottom:4px}
+.req{color:#e53e3e;margin-left:2px}
+.btn-full{width:100%;padding:11px;font-size:15px;border-radius:5px;margin-top:4px;cursor:pointer}
+.auth-switch{text-align:center;margin-top:16px;font-size:13px;color:#718096}
+.auth-switch a{color:var(--primary);font-weight:600}
+.form-group-title{font-size:13px;font-weight:700;color:var(--primary);margin:18px 0 10px;padding-bottom:4px;border-bottom:1px solid #e2e8f2}
+.inline-3{display:grid;grid-template-columns:1fr 1fr 2fr;gap:8px}
+@media (max-width:900px){.grid-2,.grid-3,.split{grid-template-columns:1fr}.expert-list{height:auto}.auth-box{padding:24px 16px}.inline-3{grid-template-columns:1fr}}

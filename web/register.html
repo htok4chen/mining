@@ -138,7 +138,8 @@
     if (!realName)  { err.textContent = '请输入姓名'; return; }
     if (!title)     { err.textContent = '请输入职务 / 职称'; return; }
     if (!email)     { err.textContent = '请输入邮箱'; return; }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { err.textContent = '邮箱格式不正确'; return; }
+    const emailParts = email.split('@');
+    if (emailParts.length !== 2 || !emailParts[0] || !emailParts[1].includes('.')) { err.textContent = '邮箱格式不正确'; return; }
     if (!phone)     { err.textContent = '请输入手机号'; return; }
     if (!company)   { err.textContent = '请输入单位名称'; return; }
 
@@ -148,13 +149,14 @@
     const payload = {
       account_username: username, password,
       real_name: realName, gender, title_or_position: title,
-      email, phone, company_name: company, business_scope: scope || undefined,
-      landline_country_code: ldCC || undefined,
-      landline_area_code: ldArea || undefined,
-      landline_number: ldNum || undefined,
-      fax_country_code: fxCC || undefined,
-      fax_area_code: fxArea || undefined,
-      fax_number: fxNum || undefined
+      email, phone, company_name: company,
+      business_scope: scope,
+      landline_country_code: ldCC,
+      landline_area_code: ldArea,
+      landline_number: ldNum,
+      fax_country_code: fxCC,
+      fax_area_code: fxArea,
+      fax_number: fxNum
     };
 
     try {

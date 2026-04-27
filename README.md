@@ -159,6 +159,8 @@
 | `DB_NAME`   | 数据库名                           | `mining`                 |
 | `JWT_SECRET` | JWT 签名密钥（**必须设置为强随机字符串**） | `your-strong-secret-key` |
 
+> 生成强随机密钥示例：`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+
 ## 5. 验收清单
 
 - [ ] **成功注册**：访问 `/register.html`，填写所有必填项，点击「注册」，跳转到登录页并提示成功

@@ -28,7 +28,8 @@ router.post('/register', async (req, res, next) => {
     if (password.length < 6) {
       return res.status(400).json({ message: '密码不得少于 6 位' });
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    const emailParts = email.split('@');
+    if (emailParts.length !== 2 || !emailParts[0] || !emailParts[1].includes('.') || !emailParts[1].split('.').pop()) {
       return res.status(400).json({ message: '邮箱格式不正确' });
     }
 
@@ -77,7 +78,7 @@ router.post('/login', async (req, res, next) => {
     const hashForCompare = passwordHash.startsWith('$2') ? passwordHash : DUMMY_BCRYPT_HASH;
     const passwordOk = await bcrypt.compare(password, hashForCompare);
 
-    if (!user || user.status !== 1 || !passwordOk || !passwordHash.startsWith('$2')) {
+    if (!user || user.status !== 1 || !passwordOk) {
       return res.status(401).json({ message: '用户名或密码错误' });
     }
 

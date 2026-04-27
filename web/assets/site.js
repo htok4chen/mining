@@ -104,6 +104,12 @@ async function loadMiningPage() {
   if (list) renderCards(list, data && Array.isArray(data.list) ? data.list : [], r => `<div class="card"><div class="content"><h4>${esc(r.title)}</h4><p>${esc(r.category_name || '')} | ${esc(r.province || '')}${esc(r.city || '')}</p><p>${esc(r.summary || '')}</p><p>参考价格：${esc(r.price_ref || '-')} 万元</p><small>${esc((r.publish_time||'').slice(0,10))}</small><p><a href="/finance-detail.html?id=${encodeURIComponent(r.id)}" class="detail-link">查看详情</a></p></div></div>`);
 }
 
+async function loadExperts() {
+  const data = await api('/api/public/experts');
+  const box = $('#expertsList');
+  if (box) renderCards(box, Array.isArray(data) ? data : [], e => `<div class="card"><div class="content" style="display:flex;gap:10px;align-items:flex-start"><img src="${esc(e.avatar || 'https://picsum.photos/80')}" alt="${esc(e.name)}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;flex-shrink:0"><div><h4 style="margin:0 0 4px">${esc(e.name)}</h4><p style="margin:0 0 4px;font-size:13px;color:#8ea1b7">${esc(e.title || '')}</p><p style="margin:0 0 6px;font-size:12px">${esc(e.intro || '')}</p><a href="/expert-detail.html?id=${encodeURIComponent(e.id)}" class="detail-link">查看详情</a></div></div></div>`);
+}
+
 async function submitMessage(e) {
   e.preventDefault();
   const payload = {
@@ -194,4 +200,4 @@ async function submitInquiry(e) {
   if (res) { $('#iqName').value = ''; $('#iqPhone').value = ''; $('#iqContent').value = ''; }
 }
 
-window.siteApp = { loadHome, loadProducts, loadAlbums, loadNewsPage, loadMiningPage, submitMessage, loadNewsDetail, loadAdDetail, loadExpertDetail, loadFinanceDetail, loadAlbumDetail, loadProductDetail, submitInquiry };
+window.siteApp = { loadHome, loadProducts, loadAlbums, loadNewsPage, loadMiningPage, loadExperts, submitMessage, loadNewsDetail, loadAdDetail, loadExpertDetail, loadFinanceDetail, loadAlbumDetail, loadProductDetail, submitInquiry };

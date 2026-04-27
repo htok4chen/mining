@@ -3,20 +3,20 @@
 <div class="container">
   <section class="section banner" id="banner"></section>
   <section class="section grid grid-2">
-    <div><h2>最新新闻</h2><ul class="list" id="homeNews"></ul></div>
-    <div><h2>专家信息滚动展示</h2><div id="homeExperts" class="expert-list"></div></div>
-  </section>
-  <section class="section small-banner" id="middleBanner"></section>
-  <section class="section"><h2>矿权融资信息</h2>
-    <div class="filters">
-      <input id="fKeyword" placeholder="关键词">
-      <input id="fProvince" placeholder="省份">
-      <input id="fCategory" placeholder="分类ID">
-      <select id="fSort"><option value="">默认排序</option><option value="price_asc">价格升序</option><option value="price_desc">价格降序</option></select>
-      <button onclick="siteApp.loadMiningPage()">筛选</button>
+    <div>
+      <div class="section-header"><h2>最新动态</h2><a href="/news.html" class="more-link">更多 ></a></div>
+      <ul class="list" id="homeNews"></ul>
     </div>
+    <div>
+      <div class="section-header"><h2>专家信息滚动展示</h2><a href="/experts.html" class="more-link">更多 ></a></div>
+      <div id="homeExperts" class="expert-list"></div>
+    </div>
+  </section>
+  <section class="section">
+    <div class="section-header"><h2>矿权融资</h2><a href="/finance.html" class="more-link">更多 ></a></div>
     <div id="homeMining" class="cards"></div>
   </section>
+  <section class="section small-banner" id="middleBanner"></section>
 </div>
 <script src="/assets/site.js"></script><script>siteApp.loadHome();</script>
 </body></html>

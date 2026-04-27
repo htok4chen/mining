@@ -5,13 +5,15 @@
 ## 1. 已实现模块清单
 
 ### 前台（静态站点）
-- 首页（logo+导航、广告位、新闻列表、专家滚动展示、矿权融资筛选与列表）
+- 首页（logo+导航、广告位、最新动态列表 + "更多"链接跳转 `/news.html`、专家信息滚动展示 + "更多"链接跳转 `/experts.html`、矿权融资预览 + "更多"链接跳转 `/finance.html`、中部广告位）
+  - **布局说明**：顶部信息条（版权/地址/电话）已移至页面底部页脚区域，主导航仅保留 logo + 导航链接。
+  - **首页区块顺序**：最新动态 → 专家信息 → 矿权融资 → 中部广告位
 - 关于我们
 - 产品展示（含详情页 `/product-detail.html?id=...`）
 - 新闻资讯（含详情页 `/news-detail.html?id=...`）
+- 专家展示列表（`/experts.html`，含"更多"入口，点击可查看专家详情 `/expert-detail.html?id=...`）
+- 矿权融资列表（`/finance.html`，含筛选功能，含详情页 `/finance-detail.html?id=...`）
 - 企业相册（含详情页 `/album-detail.html?id=...`）
-- 专家详情页（`/expert-detail.html?id=...`）
-- 融资项目详情页（`/finance-detail.html?id=...`，含在线洽谈表单）
 - 广告详情页（`/ad-detail.html?id=...`）
 - 留言反馈
 - 联系我们

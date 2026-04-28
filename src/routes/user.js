@@ -13,7 +13,8 @@ router.get('/my-financing', async (req, res, next) => {
     const page = Math.max(Number(req.query.page || 1), 1);
     const pageSize = Math.min(Math.max(Number(req.query.page_size || 10), 1), 100);
     const [list] = await db.query(
-      `SELECT mf.*, mc.name AS category_name
+      `SELECT mf.*, mc.name AS category_name,
+              (SELECT COUNT(*) FROM mining_inquiry mi WHERE mi.financing_id = mf.id) AS inquiry_count
        FROM mining_financing mf
        LEFT JOIN mining_category mc ON mc.id = mf.category_id
        WHERE mf.user_id = ?

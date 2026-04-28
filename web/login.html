@@ -23,9 +23,19 @@
 <script src="/assets/site.js"></script>
 <script>
 (function () {
-  const redirectUrl = new URLSearchParams(location.search).get('redirect');
+  function getSafeRedirect() {
+    const raw = new URLSearchParams(location.search).get('redirect') || '';
+    if (!raw) return '/index.html';
+    try {
+      const u = new URL(raw, location.origin);
+      // Only allow same-origin redirects
+      if (u.origin !== location.origin) return '/index.html';
+      return u.pathname + u.search + u.hash;
+    } catch (_) { return '/index.html'; }
+  }
+  const redirectUrl = getSafeRedirect();
   if (localStorage.getItem('user_token')) {
-    location.replace(redirectUrl || '/index.html');
+    location.replace(redirectUrl);
     return;
   }
 
@@ -49,7 +59,7 @@
       if (!r.ok) { err.textContent = data.message || '登录失败'; return; }
       localStorage.setItem('user_token', data.token);
       localStorage.setItem('user_name', data.real_name || data.account_username);
-      location.replace(redirectUrl || '/index.html');
+      location.replace(redirectUrl);
     } catch (_) {
       err.textContent = '网络错误，请稍后重试';
     } finally {

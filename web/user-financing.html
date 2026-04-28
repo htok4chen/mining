@@ -51,6 +51,7 @@
   const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
   let currentPage = 1;
+  const rowCache = new Map();
 
   async function loadList(page) {
     currentPage = page || 1;
@@ -61,6 +62,8 @@
       if (r.status === 401) { localStorage.removeItem('user_token'); location.replace('/login.html'); return; }
       const data = await r.json();
       const rows = data.list || [];
+      rowCache.clear();
+      rows.forEach(row => rowCache.set(row.id, row));
       if (!rows.length) { box.innerHTML = '<div class="uc-empty">暂无融资信息，点击右上角"发布融资信息"开始发布。</div>'; return; }
       const statusLabel = (s) => s === 1 ? '<span class="tag tag-on">展示中</span>' : '<span class="tag tag-off">已下线</span>';
       box.innerHTML = `<table class="uc-table"><thead><tr><th>标题</th><th>地区</th><th>参考价格</th><th>状态</th><th>发布时间</th><th>操作</th></tr></thead><tbody>
@@ -71,7 +74,7 @@
           <td>${statusLabel(r.status)}</td>
           <td>${esc((r.publish_time || r.created_at || '').slice(0, 10))}</td>
           <td>
-            <button class="uc-act-btn" onclick="openEditModal(${encodeURIComponent(JSON.stringify(r))})">编辑</button>
+            <button class="uc-act-btn" onclick="openEditModal(${r.id})">编辑</button>
             <button class="uc-act-btn" onclick="toggleStatus(${r.id}, ${r.status})">${r.status === 1 ? '下线' : '上线'}</button>
             <button class="uc-act-btn danger" onclick="deletePost(${r.id})">删除</button>
             <a href="/user-received.html?fin_id=${encodeURIComponent(r.id)}" class="uc-act-btn" style="background:#0b5fb3;color:#fff;text-decoration:none;display:inline-block">洽谈(${r.inquiry_count || 0})</a>
@@ -95,8 +98,9 @@
     document.getElementById('finModal').classList.add('open');
   }
 
-  function openEditModal(rowJson) {
-    const r = typeof rowJson === 'string' ? JSON.parse(decodeURIComponent(rowJson)) : rowJson;
+  function openEditModal(id) {
+    const r = rowCache.get(id);
+    if (!r) { alert('数据不存在，请刷新后重试'); return; }
     document.getElementById('modalTitle').textContent = '编辑融资信息';
     document.getElementById('fTitle').value = r.title || '';
     document.getElementById('fProvince').value = r.province || '';

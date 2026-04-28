@@ -1,5 +1,7 @@
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const db = require('../services/db');
+const { jwtSecret } = require('../config/security');
 
 const router = express.Router();
 
@@ -177,9 +179,20 @@ router.post('/mining-inquiries', async (req, res, next) => {
   try {
     const { financing_id, name, phone, content } = req.body;
     if (!financing_id || !name || !phone) return res.status(400).json({ message: '项目、姓名、电话必填' });
+
+    // Optionally associate submission with logged-in user
+    let userId = null;
+    const rawToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (rawToken) {
+      try {
+        const payload = jwt.verify(rawToken, jwtSecret);
+        if (payload.role === 'user') userId = payload.id;
+      } catch (_) { /* anonymous submission is fine */ }
+    }
+
     await db.query(
-      'INSERT INTO mining_inquiry (financing_id, name, phone, content, status, created_at, updated_at) VALUES (?, ?, ?, ?, 0, NOW(), NOW())',
-      [financing_id, name, phone, content || null]
+      'INSERT INTO mining_inquiry (financing_id, user_id, name, phone, content, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, NOW(), NOW())',
+      [financing_id, userId, name, phone, content || null]
     );
     res.json({ message: '提交成功' });
   } catch (e) { next(e); }

@@ -1,0 +1,70 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>用户中心 - 矿业信息服务平台</title><link rel="stylesheet" href="/assets/style.css"></head><body>
+<script src="/assets/layout.js"></script>
+<div class="container">
+  <div class="uc-layout">
+    <aside class="uc-sidebar">
+      <a href="/user-center.html" id="sideHome">🏠 个人中心</a>
+      <a href="/user-financing.html" id="sideFinancing">📋 我的融资信息</a>
+      <a href="/user-received.html" id="sideReceived">💬 收到的洽谈</a>
+      <a href="/user-sent.html" id="sideSent">📨 我的洽谈记录</a>
+    </aside>
+    <main class="uc-main" id="ucContent">
+      <div id="ucLoading" style="color:#8ea1b7;padding:24px 0">加载中...</div>
+    </main>
+  </div>
+</div>
+<script src="/assets/site.js"></script>
+<script>
+(function () {
+  const token = localStorage.getItem('user_token');
+  if (!token) { location.replace('/login.html?redirect=' + encodeURIComponent(location.href)); return; }
+
+  const page = location.pathname.split('/').pop() || 'user-center.html';
+  const sideMap = { 'user-center.html': 'sideHome', 'user-financing.html': 'sideFinancing', 'user-received.html': 'sideReceived', 'user-sent.html': 'sideSent' };
+  const activeId = sideMap[page];
+  if (activeId) { const el = document.getElementById(activeId); if (el) el.classList.add('active'); }
+
+  const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const authHdr = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+
+  async function loadDashboard() {
+    const box = document.getElementById('ucContent');
+    box.innerHTML = '<div style="color:#8ea1b7;padding:24px 0">加载中...</div>';
+    try {
+      const [meRes, finRes, recRes, sentRes] = await Promise.all([
+        fetch('/api/public/auth/me', { headers: authHdr }),
+        fetch('/api/user/my-financing?page_size=1', { headers: authHdr }),
+        fetch('/api/user/received-inquiries?page_size=1', { headers: authHdr }),
+        fetch('/api/user/my-inquiries?page_size=1', { headers: authHdr })
+      ]);
+      if (meRes.status === 401) { localStorage.removeItem('user_token'); localStorage.removeItem('user_name'); location.replace('/login.html'); return; }
+      const me = await meRes.json();
+      const fin = finRes.ok ? await finRes.json() : { total: '-' };
+      const rec = recRes.ok ? await recRes.json() : { total: '-' };
+      const sent = sentRes.ok ? await sentRes.json() : { total: '-' };
+      box.innerHTML = `
+        <h2>个人中心</h2>
+        <div style="margin-bottom:18px;padding:14px 18px;background:#f0f6ff;border-radius:8px">
+          <strong style="font-size:16px">${esc(me.real_name || me.account_username)}</strong>
+          <span style="margin-left:10px;font-size:13px;color:#718096">${esc(me.title_or_position || '')} · ${esc(me.company_name || '')}</span>
+          <p style="margin:6px 0 0;font-size:13px;color:#718096">用户名：${esc(me.account_username)} &nbsp;|&nbsp; 邮箱：${esc(me.email)} &nbsp;|&nbsp; 手机：${esc(me.phone)}</p>
+        </div>
+        <div class="uc-stat-row">
+          <div class="uc-stat"><div class="num">${fin.total}</div><div class="label">我发布的融资信息</div></div>
+          <div class="uc-stat"><div class="num">${rec.total}</div><div class="label">收到的洽谈</div></div>
+          <div class="uc-stat"><div class="num">${sent.total}</div><div class="label">我的洽谈记录</div></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <a href="/user-financing.html" class="detail-link">📋 管理融资信息</a>
+          <a href="/user-received.html" class="detail-link">💬 查看收到的洽谈</a>
+          <a href="/user-sent.html" class="detail-link">📨 我的洽谈记录</a>
+        </div>`;
+    } catch (_) {
+      box.innerHTML = '<div class="uc-empty">加载失败，请刷新重试</div>';
+    }
+  }
+
+  loadDashboard();
+})();
+</script>
+</body></html>

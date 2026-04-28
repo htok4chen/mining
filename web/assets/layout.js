@@ -14,8 +14,9 @@
     location.href = '/login.html';
   };
 
+  const ucActive = /^user-/.test(current) ? ' active' : '';
   const authHtml = userToken
-    ? `<div class="nav-user-area"><span class="nav-user-name">👤 ${esc(userName || '用户')}</span><a href="#" class="nav-auth-btn" id="_navLogoutBtn">退出</a></div>`
+    ? `<div class="nav-user-area"><a href="/user-center.html" class="nav-auth-btn${ucActive}">👤 ${esc(userName || '用户中心')}</a><a href="#" class="nav-auth-btn" id="_navLogoutBtn">退出</a></div>`
     : `<div class="nav-user-area"><a href="/login.html" class="nav-auth-btn${current==='login.html'?' active':''}">登录</a><a href="/register.html" class="nav-auth-btn${current==='register.html'?' active':''}">注册</a></div>`;
   document.body.insertAdjacentHTML('afterbegin', `<header class="header"><div class="container header-inner"><a class="logo" href="/index.html">矿业信息服务平台</a><nav class="nav">${nav}</nav>${authHtml}</div></header>`);
   document.body.insertAdjacentHTML('beforeend', '<footer class="footer"><div class="container"><div class="footer-info">版权 &copy; 2026 矿业信息服务平台 &nbsp;|&nbsp; 地址：北京市朝阳区矿业大道88号 &nbsp;|&nbsp; 电话：010-88886666 &nbsp;|&nbsp; 邮箱：service@example.com</div></div></footer>');

@@ -23,7 +23,11 @@
 <script src="/assets/site.js"></script>
 <script>
 (function () {
-  if (localStorage.getItem('user_token')) { location.replace('/index.html'); return; }
+  const redirectUrl = new URLSearchParams(location.search).get('redirect');
+  if (localStorage.getItem('user_token')) {
+    location.replace(redirectUrl || '/index.html');
+    return;
+  }
 
   async function handleLogin(e) {
     e.preventDefault();
@@ -45,7 +49,7 @@
       if (!r.ok) { err.textContent = data.message || '登录失败'; return; }
       localStorage.setItem('user_token', data.token);
       localStorage.setItem('user_name', data.real_name || data.account_username);
-      location.replace('/index.html');
+      location.replace(redirectUrl || '/index.html');
     } catch (_) {
       err.textContent = '网络错误，请稍后重试';
     } finally {

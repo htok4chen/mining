@@ -162,7 +162,22 @@ async function loadFinanceDetail() {
   if (!id) { box.innerHTML = '<p>参数错误</p>'; return; }
   const data = await api(`/api/public/mining-financing/${encodeURIComponent(id)}`);
   if (!data) { box.innerHTML = '<p>融资项目不存在</p>'; return; }
-  box.innerHTML = `<h1>${esc(data.title)}</h1><p style="color:#8ea1b7">${esc(data.category_name || '')} | ${esc(data.province || '')}${esc(data.city || '')}</p><p>参考价格：<strong>${esc(data.price_ref || '-')} 万元</strong></p><p>${esc((data.publish_time||'').slice(0,10))}</p><div class="detail-body">${esc(data.detail || data.summary || '')}</div><form onsubmit="siteApp.submitInquiry(event)" style="margin-top:18px"><h3>在线洽谈</h3><div class="form-row"><label>姓名</label><input id="iqName" required></div><div class="form-row"><label>电话</label><input id="iqPhone" required></div><div class="form-row"><label>留言</label><textarea id="iqContent" rows="4"></textarea></div><input type="hidden" id="iqFinId" value="${esc(data.id)}"><button type="submit">提交洽谈</button></form>`;
+  const isLoggedIn = !!localStorage.getItem('user_token');
+  const inquirySection = isLoggedIn
+    ? `<form onsubmit="siteApp.submitInquiry(event)" style="margin-top:18px">
+        <h3>在线洽谈</h3>
+        <div class="form-row"><label>姓名</label><input id="iqName" required></div>
+        <div class="form-row"><label>电话</label><input id="iqPhone" required></div>
+        <div class="form-row"><label>留言</label><textarea id="iqContent" rows="4"></textarea></div>
+        <input type="hidden" id="iqFinId" value="${esc(data.id)}">
+        <button type="submit">提交洽谈</button>
+      </form>`
+    : `<div class="inquiry-login-hint" style="margin-top:18px;padding:16px;background:#f0f7ff;border:1px solid #c0d8f7;border-radius:6px">
+        <h3 style="margin:0 0 8px;color:var(--primary)">在线洽谈</h3>
+        <p style="margin:0 0 10px;color:#555">请先登录后提交洽谈申请。</p>
+        <a href="/login.html?redirect=${encodeURIComponent(location.href)}" class="detail-link">立即登录</a>
+      </div>`;
+  box.innerHTML = `<h1>${esc(data.title)}</h1><p style="color:#8ea1b7">${esc(data.category_name || '')} | ${esc(data.province || '')}${esc(data.city || '')}</p><p>参考价格：<strong>${esc(data.price_ref || '-')} 万元</strong></p><p>${esc((data.publish_time||'').slice(0,10))}</p><div class="detail-body">${esc(data.detail || data.summary || '')}</div>${inquirySection}`;
 }
 
 async function loadAlbumDetail() {
@@ -187,6 +202,13 @@ async function loadProductDetail() {
 
 async function submitInquiry(e) {
   e.preventDefault();
+  const token = localStorage.getItem('user_token');
+  if (!token) {
+    const finId = $('#iqFinId') ? $('#iqFinId').value : '';
+    const target = finId ? `/finance-detail.html?id=${encodeURIComponent(finId)}` : location.href;
+    location.href = `/login.html?redirect=${encodeURIComponent(target)}`;
+    return;
+  }
   const payload = {
     financing_id: $('#iqFinId').value,
     name: $('#iqName').value,
@@ -194,7 +216,9 @@ async function submitInquiry(e) {
     content: $('#iqContent').value
   };
   const res = await api('/api/public/mining-inquiries', {
-    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+    body: JSON.stringify(payload)
   });
   alert((res && res.message) || '提交成功');
   if (res) { $('#iqName').value = ''; $('#iqPhone').value = ''; $('#iqContent').value = ''; }

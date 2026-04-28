@@ -9,6 +9,7 @@ const db = require('./services/db');
 const publicRoutes = require('./routes/public');
 const adminRoutes = require('./routes/admin');
 const authRoutes = require('./routes/auth');
+const userRoutes = require('./routes/user');
 require('./config/security');
 
 const app = express();
@@ -41,6 +42,7 @@ app.use('/api/public/auth/login', loginLimiter);
 app.use('/uploads', express.static(uploadsRoot));
 app.use('/api/public/auth', authRoutes);
 app.use('/api/public', publicRoutes);
+app.use('/api/user', userRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/admin', express.static(path.join(webRoot, 'admin')));
 app.use('/', express.static(webRoot));

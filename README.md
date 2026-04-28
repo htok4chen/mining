@@ -17,8 +17,22 @@
 - 广告详情页（`/ad-detail.html?id=...`）
 - 留言反馈
 - 联系我们
-- **用户登录页**（`/login.html`）
+- **用户登录页**（`/login.html`，支持 `?redirect=<URL>` 登录后自动跳回原页面）
 - **用户注册页**（`/register.html`）
+- **用户中心**（`/user-center.html`，需登录）
+
+### 用户中心（需登录，导航栏显示"用户中心"入口）
+
+| 页面 | 路径 | 说明 |
+|------|------|------|
+| 个人中心 | `/user-center.html` | 概览：用户信息、统计数字、快捷入口 |
+| 我的融资信息 | `/user-financing.html` | 查看/发布/编辑/删除/上下线自己的融资项目 |
+| 收到的洽谈 | `/user-received.html` | 他人对我的融资信息提交的洽谈申请 |
+| 我的洽谈记录 | `/user-sent.html` | 我对他人融资信息提交的洽谈历史 |
+
+**在线洽谈登录保护**：
+- 已登录用户在 `/finance-detail.html` 可直接看到洽谈表单并提交。
+- 未登录用户看到"请先登录后提交洽谈"提示，点击"立即登录"跳转 `/login.html?redirect=<当前页>`，登录后自动返回。
 
 ### 后台（/admin）
 
@@ -42,29 +56,7 @@
 |           | 融资洽谈              | 列表、搜索（状态）、查看、回复/处理       |
 | 用户管理   | 注册用户              | 列表、搜索（状态）、查看详情、启用/禁用    |
 
-#### 普通管理员操作流程
-
-1. 打开后台地址，输入用户名和密码，点击「登录」。
-2. 左侧折叠菜单按分类展示管理模块；点击分类标题可展开/收起，展开状态自动保存。
-3. 点击菜单项进入对应管理列表。
-4. **新增**：点击「+ 新增」按钮，弹出表单，填写必填字段（带 * 标记），点击「确认」保存。
-5. **编辑**：点击列表行的「编辑」按钮，弹出已有数据的表单，修改后点击「确认」。
-6. **删除**：点击「删除」后出现二次确认弹窗，确认后不可恢复。
-7. **启停**：点击「启用」/「停用」按钮，即时切换发布状态。
-8. **搜索**：部分模块顶部有搜索栏（分类、省份、状态等），填写后点击「搜索」；点击「重置」清除条件。
-9. **留言/洽谈**：点击「处理/回复」按钮，可查看原始内容并填写回复，同时切换处理状态。
-10. **注册用户**：点击「查看」查看完整注册信息；点击「启用」/「停用」启停用户账号。
-
-#### 交互设计说明
-
-- 所有写操作（新增、编辑、删除、启停、回复）均有成功/失败 Toast 提示。
-- 删除操作有二次确认弹窗，防止误删。
-- 表单必填字段验证即时提示，字段边框变红并显示错误信息。
-- 登录令牌过期自动跳回登录页。
-- 数据加载中显示"⏳ 加载中..."，无数据显示空状态引导提示。
-- 菜单折叠状态通过 localStorage 记忆，刷新后保持。
-
-## 2. 数据库新增表清单
+## 2. 数据库表清单
 
 - `admin_user`
 - `news_category`
@@ -73,15 +65,15 @@
 - `ads`
 - `expert`
 - `mining_category`
-- `mining_financing`
-- `mining_inquiry`
+- `mining_financing`（含 `user_id` 列，记录用户发布的融资信息）
+- `mining_inquiry`（含 `user_id` 列，记录已登录用户提交的洽谈）
 - `product`
 - `album`
 - `message_feedback`
 - `site_config`
 - `end_user`（注册用户表）
 
-> 初始化 SQL：`/sql/init.sql`（含种子数据）
+> 初始化 SQL：`/sql/init.sql`（含种子数据，升级脚本自动为已有表添加新列）
 
 ## 3. API 清单
 
@@ -99,13 +91,23 @@
 - `GET /api/public/products` — 产品列表
 - `GET /api/public/products/:id` — 产品详情
 - `POST /api/public/messages` — 提交留言
-- `POST /api/public/mining-inquiries` — 提交融资洽谈
+- `POST /api/public/mining-inquiries` — 提交融资洽谈（已登录用户自动关联 user_id）
 
 ### Public Auth API（用户注册与登录）
 - `POST /api/public/auth/register` — 用户注册（返回 `{ message, id }`）
 - `POST /api/public/auth/login` — 用户登录（返回 `{ token, account_username, real_name }`，限频：15 分钟内最多 20 次）
 - `GET  /api/public/auth/me` — 获取当前用户信息（需 Bearer Token，role=user）
 - `POST /api/public/auth/logout` — 退出登录（仅服务端确认；客户端删除 localStorage 中的 `user_token` / `user_name`）
+
+### User API（需登录，Bearer Token，role=user）
+- `GET  /api/user/my-financing` — 我发布的融资信息列表
+- `POST /api/user/my-financing` — 发布新融资信息
+- `GET  /api/user/my-financing/:id` — 查看自己的某条融资信息
+- `PUT  /api/user/my-financing/:id` — 编辑自己的融资信息（含上/下线）
+- `DELETE /api/user/my-financing/:id` — 删除自己的融资信息
+- `GET  /api/user/my-financing/:id/inquiries` — 查看某条融资信息收到的洽谈
+- `GET  /api/user/received-inquiries` — 查看所有融资信息收到的洽谈
+- `GET  /api/user/my-inquiries` — 我提交的洽谈记录
 
 ### Admin API（需登录）
 - `POST /api/admin/login`
@@ -141,6 +143,7 @@
    - 前台：`http://localhost:9080/`
    - 前台登录：`http://localhost:9080/login.html`
    - 前台注册：`http://localhost:9080/register.html`
+   - **用户中心**：`http://localhost:9080/user-center.html`
    - 后台：`http://localhost:9080/admin/`
 
 默认管理员：
@@ -163,13 +166,30 @@
 
 ## 5. 验收清单
 
-- [ ] **成功注册**：访问 `/register.html`，填写所有必填项，点击「注册」，跳转到登录页并提示成功
-- [ ] **重复注册检测**：再次用同一用户名/邮箱/手机注册，显示友好错误提示
-- [ ] **成功登录**：在 `/login.html` 输入正确账号密码，跳转首页，导航栏显示用户名
-- [ ] **me 接口鉴权**：带正确 Token 请求 `GET /api/public/auth/me` 返回用户信息；不带或过期 Token 返回 401
-- [ ] **管理员用户列表**：在后台「用户管理 → 注册用户」看到已注册用户列表
-- [ ] **查看用户详情**：点击「查看」弹出完整注册信息
-- [ ] **启用/禁用账号**：点击「停用」后再登录返回 401，点击「启用」后可正常登录
+### 注册 / 登录
+- [ ] 访问 `/register.html`，填写所有必填项，点击「注册」，跳转到登录页并提示成功
+- [ ] 重复用户名/邮箱/手机注册，显示友好错误提示
+- [ ] 在 `/login.html` 输入正确账号密码，跳转首页，导航栏出现「用户中心」入口
+- [ ] 未登录时导航栏显示「登录」和「注册」
+
+### 用户中心
+- [ ] 登录后点击导航栏「用户中心」进入 `/user-center.html`，展示用户信息与统计数字
+- [ ] 未登录直接访问 `/user-center.html`，自动跳转登录页
+- [ ] 在「我的融资信息」页面成功发布新融资信息，列表即时刷新
+- [ ] 编辑、上下线、删除自己的融资信息均生效
+- [ ] 编辑/删除其他用户的融资信息接口返回 404（权限隔离）
+- [ ] 「收到的洽谈」页面展示他人对我融资信息的洽谈申请
+- [ ] 「我的洽谈记录」页面展示自己提交过的洽谈历史
+
+### 在线洽谈登录保护
+- [ ] 未登录访问融资详情页 `/finance-detail.html?id=...`，看到「请先登录」提示而非表单
+- [ ] 点击「立即登录」跳转到 `/login.html?redirect=<融资详情URL>`
+- [ ] 登录成功后自动跳回融资详情页，且现在可以看到洽谈表单
+- [ ] 已登录用户提交洽谈成功，在「我的洽谈记录」中可查看
+
+### 后台兼容
+- [ ] 管理员后台功能（新闻、广告、矿权融资等 CRUD）不受影响
+- [ ] 管理员在「融资洽谈」列表可看到用户提交的洽谈记录
 
 ## 6. Windows 部署脚本
 

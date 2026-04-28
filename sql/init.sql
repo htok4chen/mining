@@ -82,6 +82,7 @@ CREATE TABLE IF NOT EXISTS mining_category (
 
 CREATE TABLE IF NOT EXISTS mining_financing (
   id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NULL,
   category_id INT NULL,
   title VARCHAR(255) NOT NULL,
   province VARCHAR(50) NULL,
@@ -95,12 +96,14 @@ CREATE TABLE IF NOT EXISTS mining_financing (
   sort INT NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  KEY idx_mining_category (category_id)
+  KEY idx_mining_category (category_id),
+  KEY idx_mining_user (user_id)
 );
 
 CREATE TABLE IF NOT EXISTS mining_inquiry (
   id INT AUTO_INCREMENT PRIMARY KEY,
   financing_id INT NOT NULL,
+  user_id INT NULL,
   name VARCHAR(100) NOT NULL,
   phone VARCHAR(50) NOT NULL,
   content VARCHAR(500) NULL,
@@ -108,7 +111,8 @@ CREATE TABLE IF NOT EXISTS mining_inquiry (
   status TINYINT NOT NULL DEFAULT 0,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  KEY idx_inquiry_financing (financing_id)
+  KEY idx_inquiry_financing (financing_id),
+  KEY idx_inquiry_user (user_id)
 );
 
 CREATE TABLE IF NOT EXISTS product (
@@ -246,3 +250,18 @@ CREATE TABLE IF NOT EXISTS end_user (
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+
+-- Idempotent migrations for existing deployments
+SET @col_exists = (SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'mining_financing' AND COLUMN_NAME = 'user_id');
+SET @sql = IF(@col_exists = 0,
+  'ALTER TABLE mining_financing ADD COLUMN user_id INT NULL AFTER id, ADD KEY idx_mining_user (user_id)',
+  'SELECT 1');
+PREPARE stmt FROM @sql; EXECUTE stmt; DEALLOCATE PREPARE stmt;
+
+SET @col_exists2 = (SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'mining_inquiry' AND COLUMN_NAME = 'user_id');
+SET @sql2 = IF(@col_exists2 = 0,
+  'ALTER TABLE mining_inquiry ADD COLUMN user_id INT NULL AFTER financing_id, ADD KEY idx_inquiry_user (user_id)',
+  'SELECT 1');
+PREPARE stmt2 FROM @sql2; EXECUTE stmt2; DEALLOCATE PREPARE stmt2;

@@ -66,6 +66,31 @@
     if (btn && nav) btn.addEventListener("click", () => nav.classList.toggle("open"));
   }
 
+  function ensureAuthNavLinks() {
+    const navList = document.querySelector(".nav ul");
+    if (!navList) return;
+
+    const hasLogin = !!navList.querySelector('a[href="login.html"]');
+    const hasUserCenter = !!navList.querySelector('a[href="user-center.html"]');
+
+    if (!hasLogin) {
+      const li = document.createElement("li");
+      li.innerHTML = '<a href="login.html">登录/注册</a>';
+      navList.appendChild(li);
+    }
+    if (!hasUserCenter) {
+      const li = document.createElement("li");
+      li.innerHTML = '<a href="user-center.html">用户中心</a>';
+      navList.appendChild(li);
+    }
+
+    const current = (location.pathname.split("/").pop() || "index.html").toLowerCase();
+    const loginLink = navList.querySelector('a[href="login.html"]');
+    const userCenterLink = navList.querySelector('a[href="user-center.html"]');
+    if (loginLink && current === "login.html") loginLink.classList.add("active");
+    if (userCenterLink && current === "user-center.html") userCenterLink.classList.add("active");
+  }
+
   function bindAuthEntry() {
     const topbarTail = document.querySelector(".topbar .container > div:last-child");
     if (!topbarTail) return;
@@ -246,6 +271,7 @@
 
   document.addEventListener("DOMContentLoaded", function () {
     bindMenu();
+    ensureAuthNavLinks();
     bindLogout();
     bindLoginAndRegister();
     bindUserCenter();

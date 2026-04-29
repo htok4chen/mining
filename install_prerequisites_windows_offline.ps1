@@ -1,0 +1,6 @@
+Write-Host "请确保以下组件已离线安装："
+Write-Host "1) Node.js 18+"
+Write-Host "2) MySQL 8.0+"
+Write-Host "3) IIS + URL Rewrite + ARR"
+Write-Host "4) PowerShell 5+"
+Write-Host "已安装后执行 deploy_windows.ps1 完成初始化部署。"

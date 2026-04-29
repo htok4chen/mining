@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>登录注册</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="topbar"><div class="container"><div>欢迎访问矿业信息服务平台（演示）</div><div>服务热线：010-88886666</div></div></div>
+  <header class="header"><div class="container header-inner"><a class="logo" href="index.html"><img src="assets/images/logo.png"><h1>矿业信息服务平台</h1></a><button class="menu-toggle">菜单</button><nav class="nav"><ul><li><a href="index.html">首页</a></li><li><a href="login.html" class="active">登录/注册</a></li></ul></nav></div></header>
+  <div class="breadcrumb"><div class="container">当前位置：首页 / 登录注册</div></div>
+  <section class="section">
+    <div class="container auth-layout">
+      <div class="panel">
+        <div class="panel-title"><h3>用户登录</h3></div>
+        <form id="loginForm" class="form">
+          <div class="form-group"><label>账号</label><input name="username" required></div>
+          <div class="form-group"><label>密码</label><input type="password" name="password" required></div>
+          <button class="btn" type="submit">登录</button>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><h3>快速注册</h3></div>
+        <form id="registerForm" class="form">
+          <div class="form-group"><label>登录账号</label><input name="username" required></div>
+          <div class="form-group"><label>登录密码</label><input type="password" name="password" minlength="6" required></div>
+          <div class="form-group"><label>姓名</label><input name="name" required></div>
+          <div class="form-group"><label>电话</label><input name="phone" required></div>
+          <button class="btn" type="submit">注册并登录</button>
+        </form>
+      </div>
+    </div>
+  </section>
+  <footer class="footer"><div class="container"><div class="copyright">© 2026 Demo</div></div></footer>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

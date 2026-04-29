@@ -1,5 +1,21 @@
 (function () {
   const D = window.DEMO_DATA || {};
+  const STORE_KEY = "mining_demo_store_v2";
+  const getStore = () => {
+    try {
+      return JSON.parse(localStorage.getItem(STORE_KEY) || "{}");
+    } catch (_) {
+      return {};
+    }
+  };
+  const store = getStore();
+  const ads = (Array.isArray(store.ads) && store.ads.length ? store.ads : D.ads || []).filter((a) => a.status !== "offline");
+  const experts = (Array.isArray(store.experts) && store.experts.length ? store.experts : D.experts || []).filter((e) => e.status !== "offline");
+  const adsBySlot = ads.reduce((map, ad) => {
+    if (!map[ad.slot]) map[ad.slot] = [];
+    map[ad.slot].push(ad);
+    return map;
+  }, {});
 
   const qs = (s) => document.querySelector(s);
   const qsa = (s) => Array.from(document.querySelectorAll(s));
@@ -7,8 +23,8 @@
   function renderHome() {
     // 顶部轮播
     const slider = qs("#heroSlider");
-    if (slider && D.ads?.HOME_TOP_BANNER) {
-      slider.innerHTML = D.ads.HOME_TOP_BANNER.map((a, i) => `
+    if (slider && adsBySlot.HOME_TOP_BANNER?.length) {
+      slider.innerHTML = adsBySlot.HOME_TOP_BANNER.map((a, i) => `
         <a class="${i === 0 ? "active" : ""}" href="${a.linkUrl}">
           <img src="${a.imageUrl}" alt="${a.title}">
         </a>
@@ -17,21 +33,30 @@
 
     // 中部底部广告
     const mid = qs("#adMidBanner");
-    if (mid && D.ads?.HOME_MID_BANNER?.[0]) {
-      const a = D.ads.HOME_MID_BANNER[0];
+    if (mid && adsBySlot.HOME_MID_BANNER?.[0]) {
+      const a = adsBySlot.HOME_MID_BANNER[0];
       mid.innerHTML = `<a class="ad-wide" href="${a.linkUrl}"><img src="${a.imageUrl}" alt="${a.title}"></a>`;
     }
 
     const bottom = qs("#adBottomBanner");
-    if (bottom && D.ads?.HOME_BOTTOM_BANNER?.[0]) {
-      const a = D.ads.HOME_BOTTOM_BANNER[0];
+    if (bottom && adsBySlot.HOME_BOTTOM_BANNER?.[0]) {
+      const a = adsBySlot.HOME_BOTTOM_BANNER[0];
       bottom.innerHTML = `<a class="ad-wide" href="${a.linkUrl}"><img src="${a.imageUrl}" alt="${a.title}"></a>`;
+    }
+
+    const block = qs("#adBlockGrid");
+    if (block && adsBySlot.HOME_BLOCK?.length) {
+      block.innerHTML = adsBySlot.HOME_BLOCK.map((a) => `
+        <a class="ad-block" href="${a.linkUrl}" title="${a.title}">
+          <img src="${a.imageUrl}" alt="${a.title}">
+        </a>
+      `).join("");
     }
 
     // 专家
     const exp = qs("#expertScroll ul");
-    if (exp && D.experts) {
-      exp.innerHTML = D.experts.map(e => `
+    if (exp && experts.length) {
+      exp.innerHTML = experts.map(e => `
         <li>
           <img src="${e.avatarUrl}" alt="${e.name}">
           <div>

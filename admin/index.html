@@ -1,3 +1,8 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>后台演示</title><link rel="stylesheet" href="../assets/css/admin.css"></head>
-<body><aside class="admin-side"><h3>后台演示</h3><a href="index.html">仪表盘</a><a href="ads.html">广告管理</a><a href="experts.html">专家管理</a><a href="finance.html">融资管理</a><a href="news.html">新闻管理</a><a href="messages.html">留言管理</a></aside>
-<main class="admin-main"><h2>仪表盘</h2><div class="cards"><div>广告位：4</div><div>专家：3</div><div>融资项目：3</div><div>待审核留言：8</div></div></main></body></html>
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>后台仪表盘</title><link rel="stylesheet" href="../assets/css/admin.css"></head>
+<body><aside class="admin-side"><h3>后台演示</h3><a class="on" href="index.html">仪表盘</a><a href="ads.html">广告管理</a><a href="experts.html">专家管理</a><a href="finance.html">融资管理</a><a href="news.html">新闻管理</a><a href="messages.html">留言管理</a></aside>
+<main class="admin-main"><h2>仪表盘</h2><div class="cards"><div>支持分块广告位与上下线管理</div><div>支持专家头像及名片维护</div><div>支持用户资料与密码体系</div><div>支持管理员改密与用户密码重置</div></div>
+<div class="layout-2">
+  <div class="panel"><h3>管理员修改密码</h3><form id="adminPasswordForm"><div><label>原密码</label><input type="password" name="oldPassword" required></div><div><label>新密码</label><input type="password" name="newPassword" minlength="6" required></div><div><label>确认新密码</label><input type="password" name="confirmPassword" minlength="6" required></div><p><button class="btn" type="submit">修改密码</button></p></form></div>
+  <div class="panel"><h3>用户密码重置</h3><table><thead><tr><th>账号</th><th>姓名</th><th>电话</th><th>操作</th></tr></thead><tbody id="userResetTableBody"></tbody></table></div>
+</div></main>
+<script src="../assets/js/data.js"></script><script src="../assets/js/admin.js"></script></body></html>

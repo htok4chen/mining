@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>用户中心</title>
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+  <div class="topbar"><div class="container"><div>欢迎访问矿业信息服务平台（演示）</div><div>服务热线：010-88886666</div></div></div>
+  <header class="header"><div class="container header-inner"><a class="logo" href="index.html"><img src="assets/images/logo.png"><h1>矿业信息服务平台</h1></a><button class="menu-toggle">菜单</button><nav class="nav"><ul><li><a href="index.html">首页</a></li><li><a href="user-center.html" class="active">用户中心</a></li></ul></nav></div></header>
+  <div class="breadcrumb"><div class="container">当前位置：首页 / 用户中心</div></div>
+  <section class="section">
+    <div class="container user-center-grid">
+      <div class="panel">
+        <div class="panel-title"><h3>个人信息维护</h3></div>
+        <form id="profileForm" class="form">
+          <div class="form-group"><label>账号</label><input name="username" readonly></div>
+          <div class="form-group"><label>姓名</label><input name="name" required></div>
+          <div class="form-group"><label>电话</label><input name="phone" required></div>
+          <div class="form-group"><label>邮箱</label><input name="email" type="email"></div>
+          <div class="form-group"><label>公司</label><input name="company"></div>
+          <button class="btn" type="submit">保存资料</button>
+        </form>
+      </div>
+      <div class="panel">
+        <div class="panel-title"><h3>修改密码</h3></div>
+        <form id="userPasswordForm" class="form">
+          <div class="form-group"><label>原密码</label><input type="password" name="oldPassword" required></div>
+          <div class="form-group"><label>新密码</label><input type="password" name="newPassword" minlength="6" required></div>
+          <div class="form-group"><label>确认新密码</label><input type="password" name="confirmPassword" minlength="6" required></div>
+          <button class="btn" type="submit">更新密码</button>
+        </form>
+      </div>
+    </div>
+  </section>
+  <footer class="footer"><div class="container"><div class="copyright">© 2026 Demo</div></div></footer>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/main.js"></script>
+</body>
+</html>

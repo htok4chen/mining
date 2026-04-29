@@ -63,6 +63,7 @@ CREATE TABLE IF NOT EXISTS expert (
   id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   avatar VARCHAR(255) NULL,
+  card_image VARCHAR(255) NULL,
   intro VARCHAR(500) NULL,
   resume TEXT NULL,
   status TINYINT NOT NULL DEFAULT 1,
@@ -182,22 +183,42 @@ INSERT INTO ads_position (name, code, status, sort)
 SELECT '首页主轮播', 'home_banner', 1, 1 WHERE NOT EXISTS (SELECT 1 FROM ads_position WHERE code='home_banner');
 INSERT INTO ads_position (name, code, status, sort)
 SELECT '首页中部横幅', 'home_middle', 1, 2 WHERE NOT EXISTS (SELECT 1 FROM ads_position WHERE code='home_middle');
+INSERT INTO ads_position (name, code, status, sort)
+SELECT '首页分块广告', 'home_tiles', 1, 3 WHERE NOT EXISTS (SELECT 1 FROM ads_position WHERE code='home_tiles');
 
 INSERT INTO ads (position_id, title, image_url, link_url, status, sort)
-SELECT 1, '主轮播广告1', 'https://picsum.photos/1200/300?random=12', '#', 1, 1
+SELECT (SELECT id FROM ads_position WHERE code='home_banner' LIMIT 1), '主轮播广告1', 'https://picsum.photos/1200/300?random=12', '#', 1, 1
 WHERE NOT EXISTS (SELECT 1 FROM ads WHERE title='主轮播广告1');
 INSERT INTO ads (position_id, title, image_url, link_url, status, sort)
-SELECT 1, '主轮播广告2', 'https://picsum.photos/1200/300?random=14', '#', 1, 2
+SELECT (SELECT id FROM ads_position WHERE code='home_banner' LIMIT 1), '主轮播广告2', 'https://picsum.photos/1200/300?random=14', '#', 1, 2
 WHERE NOT EXISTS (SELECT 1 FROM ads WHERE title='主轮播广告2');
 INSERT INTO ads (position_id, title, image_url, link_url, status, sort)
-SELECT 2, '中部横幅', 'https://picsum.photos/1200/160?random=15', '#', 1, 1
+SELECT (SELECT id FROM ads_position WHERE code='home_middle' LIMIT 1), '中部横幅', 'https://picsum.photos/1200/160?random=15', '#', 1, 1
 WHERE NOT EXISTS (SELECT 1 FROM ads WHERE title='中部横幅');
+INSERT INTO ads (position_id, title, image_url, link_url, status, sort)
+SELECT (SELECT id FROM ads_position WHERE code='home_tiles' LIMIT 1), '分块广告1', 'https://picsum.photos/420/220?random=41', '#', 1, 1
+WHERE NOT EXISTS (SELECT 1 FROM ads WHERE title='分块广告1');
+INSERT INTO ads (position_id, title, image_url, link_url, status, sort)
+SELECT (SELECT id FROM ads_position WHERE code='home_tiles' LIMIT 1), '分块广告2', 'https://picsum.photos/220/110?random=42', '#', 1, 2
+WHERE NOT EXISTS (SELECT 1 FROM ads WHERE title='分块广告2');
+INSERT INTO ads (position_id, title, image_url, link_url, status, sort)
+SELECT (SELECT id FROM ads_position WHERE code='home_tiles' LIMIT 1), '分块广告3', 'https://picsum.photos/220/110?random=43', '#', 1, 3
+WHERE NOT EXISTS (SELECT 1 FROM ads WHERE title='分块广告3');
+INSERT INTO ads (position_id, title, image_url, link_url, status, sort)
+SELECT (SELECT id FROM ads_position WHERE code='home_tiles' LIMIT 1), '分块广告4', 'https://picsum.photos/220/110?random=44', '#', 1, 4
+WHERE NOT EXISTS (SELECT 1 FROM ads WHERE title='分块广告4');
+INSERT INTO ads (position_id, title, image_url, link_url, status, sort)
+SELECT (SELECT id FROM ads_position WHERE code='home_tiles' LIMIT 1), '分块广告5', 'https://picsum.photos/220/110?random=45', '#', 1, 5
+WHERE NOT EXISTS (SELECT 1 FROM ads WHERE title='分块广告5');
+INSERT INTO ads (position_id, title, image_url, link_url, status, sort)
+SELECT (SELECT id FROM ads_position WHERE code='home_tiles' LIMIT 1), '分块广告6', 'https://picsum.photos/220/110?random=46', '#', 1, 6
+WHERE NOT EXISTS (SELECT 1 FROM ads WHERE title='分块广告6');
 
-INSERT INTO expert (name, avatar, intro, resume, status, sort)
-SELECT '张建国', 'https://picsum.photos/80/80?random=1', '矿权评估专家', '从业20年，参与多项大型矿产项目评估。', 1, 1
+INSERT INTO expert (name, avatar, card_image, intro, resume, status, sort)
+SELECT '张建国', 'https://picsum.photos/80/80?random=1', 'https://picsum.photos/560/320?random=61', '矿权评估专家', '从业20年，参与多项大型矿产项目评估。', 1, 1
 WHERE NOT EXISTS (SELECT 1 FROM expert WHERE name='张建国');
-INSERT INTO expert (name, avatar, intro, resume, status, sort)
-SELECT '李慧敏', 'https://picsum.photos/80/80?random=2', '地质勘查顾问', '专注矿产资源勘查与开发规划。', 1, 2
+INSERT INTO expert (name, avatar, card_image, intro, resume, status, sort)
+SELECT '李慧敏', 'https://picsum.photos/80/80?random=2', 'https://picsum.photos/560/320?random=62', '地质勘查顾问', '专注矿产资源勘查与开发规划。', 1, 2
 WHERE NOT EXISTS (SELECT 1 FROM expert WHERE name='李慧敏');
 
 INSERT INTO mining_category (name, status, sort)
@@ -265,3 +286,10 @@ SET @sql2 = IF(@col_exists2 = 0,
   'ALTER TABLE mining_inquiry ADD COLUMN user_id INT NULL AFTER financing_id, ADD KEY idx_inquiry_user (user_id)',
   'SELECT 1');
 PREPARE stmt2 FROM @sql2; EXECUTE stmt2; DEALLOCATE PREPARE stmt2;
+
+SET @col_exists3 = (SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'expert' AND COLUMN_NAME = 'card_image');
+SET @sql3 = IF(@col_exists3 = 0,
+  'ALTER TABLE expert ADD COLUMN card_image VARCHAR(255) NULL AFTER avatar',
+  'SELECT 1');
+PREPARE stmt3 FROM @sql3; EXECUTE stmt3; DEALLOCATE PREPARE stmt3;

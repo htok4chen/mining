@@ -67,6 +67,7 @@ const adminApp = (() => {
       id: 'users', label: '用户管理', icon: '🧑‍💼',
       items: [
         { key: 'end-users', label: '注册用户' },
+        { key: 'password-management', label: '密码管理' },
       ],
     },
   ];
@@ -77,6 +78,7 @@ const adminApp = (() => {
   const STATUS_MAP     = { 0: '停用', 1: '启用' };
   const MSG_STATUS_MAP = { 0: '未回复', 1: '已回复', 2: '已关闭' };
   const INQ_STATUS_MAP = { 0: '待处理', 1: '已回复', 2: '已关闭' };
+  const IMAGE_UPLOAD_KEYS = new Set(['image_url', 'avatar', 'card_image', 'cover_image']);
 
   // =====================================================
   // MODULE CONFIGS
@@ -180,6 +182,7 @@ const adminApp = (() => {
       listCols: [
         { k: 'id',     l: 'ID',   w: '60px' },
         { k: 'name',   l: '姓名' },
+        { k: 'card_image', l: '名片图', trunc: true },
         { k: 'intro',  l: '简介', trunc: true },
         { k: 'sort',   l: '排序', w: '70px' },
         { k: 'status', l: '状态', badge: 'status' },
@@ -187,11 +190,18 @@ const adminApp = (() => {
       formFields: [
         { k: 'name',   l: '姓名',   type: 'text',   req: true, ph: '请输入专家姓名' },
         { k: 'avatar', l: '头像 URL', type: 'text',            ph: '请输入头像图片链接（可选）' },
+        { k: 'card_image', l: '名片图 URL', type: 'text',      ph: '请输入专家名片图片链接（可选）' },
         { k: 'intro',  l: '简介',   type: 'textarea',           ph: '请输入专家简介（可选）' },
         { k: 'resume', l: '详细履历', type: 'textarea',          ph: '请输入详细履历（可选）', rows: 4 },
         { k: 'sort',   l: '排序',   type: 'number',             ph: '数字越小越靠前' },
         { k: 'status', l: '状态',   type: 'select', opts: [{ v: 1, l: '启用' }, { v: 0, l: '停用' }] },
       ],
+    },
+
+    'password-management': {
+      label: '密码管理',
+      api: '',
+      customPage: true,
     },
 
     'mining-categories': {
@@ -466,6 +476,21 @@ const adminApp = (() => {
     return data;
   };
 
+  const uploadImage = async (file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch('/api/admin/upload-image', {
+      method: 'POST',
+      headers: state.token ? { Authorization: `Bearer ${state.token}` } : {},
+      body: fd,
+    });
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) throw new Error(`上传失败 (${res.status})`);
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || '上传失败');
+    return data.url;
+  };
+
   // =====================================================
   // TOAST
   // =====================================================
@@ -508,6 +533,7 @@ const adminApp = (() => {
     submitBtn.textContent = '确认';
     submitBtn.onclick = onSubmit || null;
     document.getElementById('admModal').style.display = 'flex';
+    bindImageUploadControls();
   };
 
   const closeModal = () => {
@@ -568,6 +594,10 @@ const adminApp = (() => {
     const mod = MODULES[moduleKey];
     if (!mod) return;
     document.getElementById('admBreadcrumb').textContent = `首页 / ${mod.label}`;
+    if (mod.customPage) {
+      renderCustomPage(moduleKey, mod);
+      return;
+    }
     await loadRelated(mod);
     renderListPage(mod);
     await fetchList();
@@ -635,6 +665,65 @@ const adminApp = (() => {
         setTimeout(fetchList, 30);
       });
     }
+  };
+
+  const renderCustomPage = async (moduleKey, mod) => {
+    const main = document.getElementById('admMain');
+    if (!main) return;
+    if (moduleKey !== 'password-management') {
+      main.innerHTML = '<div class="adm-empty"><div class="adm-empty-icon">🧩</div><div>该模块暂未配置</div></div>';
+      return;
+    }
+    main.innerHTML = `
+      <div class="adm-table-wrap" style="padding:16px;margin-bottom:14px">
+        <h3 style="margin:0 0 12px">${esc(mod.label)} - 管理员修改密码</h3>
+        <form id="admPwdForm" style="max-width:520px">
+          <div class="adm-form-row"><label>旧密码</label><input class="adm-input" type="password" name="old_password" required></div>
+          <div class="adm-form-row"><label>新密码</label><input class="adm-input" type="password" name="new_password" required></div>
+          <div class="adm-form-row"><label>确认新密码</label><input class="adm-input" type="password" name="confirm_password" required></div>
+          <button class="btn-primary" type="submit">更新管理员密码</button>
+        </form>
+      </div>
+      <div class="adm-table-wrap" style="padding:16px">
+        <h3 style="margin:0 0 12px">重置注册用户密码</h3>
+        <form id="resetUserPwdForm" style="max-width:520px">
+          <div class="adm-form-row"><label>用户名</label><input class="adm-input" name="account_username" required placeholder="请输入注册用户名"></div>
+          <div class="adm-form-row"><label>新密码</label><input class="adm-input" type="password" name="new_password" required></div>
+          <button class="btn-primary" type="submit">重置用户密码</button>
+        </form>
+      </div>`;
+
+    document.getElementById('admPwdForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const old_password = String(fd.get('old_password') || '');
+      const new_password = String(fd.get('new_password') || '');
+      const confirm_password = String(fd.get('confirm_password') || '');
+      if (new_password.length < 6) return toast('新密码至少 6 位', 'error');
+      if (new_password !== confirm_password) return toast('两次输入的新密码不一致', 'error');
+      try {
+        const res = await callApi('password', { method: 'PUT', body: JSON.stringify({ old_password, new_password }) });
+        toast(res.message || '管理员密码已更新');
+        e.target.reset();
+      } catch (err) {
+        toast(err.message || '更新失败', 'error');
+      }
+    });
+
+    document.getElementById('resetUserPwdForm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const fd = new FormData(e.target);
+      const account_username = String(fd.get('account_username') || '').trim();
+      const new_password = String(fd.get('new_password') || '');
+      if (new_password.length < 6) return toast('新密码至少 6 位', 'error');
+      try {
+        const res = await callApi('end-users/reset-password', { method: 'PUT', body: JSON.stringify({ account_username, new_password }) });
+        toast(res.message || '用户密码已重置');
+        e.target.reset();
+      } catch (err) {
+        toast(err.message || '重置失败', 'error');
+      }
+    });
   };
 
   const buildQuery = () => {
@@ -810,9 +899,45 @@ const adminApp = (() => {
       }
       input = `<input type="datetime-local" name="${f.k}" class="adm-input" value="${esc(dtv)}"${req}>`;
     } else {
-      input = `<input type="${f.type}" name="${f.k}" class="adm-input" value="${esc(v != null ? v : '')}" placeholder="${esc(f.ph || '')}"${req}>`;
+      const isImgField = IMAGE_UPLOAD_KEYS.has(f.k);
+      const baseInput = `<input type="${f.type}" name="${f.k}" class="adm-input" value="${esc(v != null ? v : '')}" placeholder="${esc(f.ph || '')}"${req}>`;
+      if (isImgField) {
+        input = `<div style="display:flex;gap:8px;align-items:center">
+          <div style="flex:1">${baseInput}</div>
+          <button type="button" class="btn-default adm-img-upload-btn" data-target="${f.k}" style="white-space:nowrap">上传图片</button>
+          <input type="file" accept="image/*" class="adm-img-upload-file" data-target="${f.k}" style="display:none">
+        </div>`;
+      } else {
+        input = baseInput;
+      }
     }
     return `<div class="adm-form-row"><label>${esc(f.l)} ${reqMk}</label>${input}</div>`;
+  };
+
+  const bindImageUploadControls = () => {
+    document.querySelectorAll('.adm-img-upload-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.target;
+        document.querySelector(`.adm-img-upload-file[data-target="${target}"]`)?.click();
+      });
+    });
+    document.querySelectorAll('.adm-img-upload-file').forEach((fileInput) => {
+      fileInput.addEventListener('change', async () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+        try {
+          const url = await uploadImage(file);
+          const target = fileInput.dataset.target;
+          const box = document.querySelector(`#admForm [name="${target}"]`);
+          if (box) box.value = url;
+          toast('图片上传成功');
+        } catch (e) {
+          toast(e.message || '图片上传失败', 'error');
+        } finally {
+          fileInput.value = '';
+        }
+      });
+    });
   };
 
   const collectForm = (formId, fields) => {
@@ -1034,4 +1159,3 @@ const adminApp = (() => {
 })();
 
 adminApp.init();
-

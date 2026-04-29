@@ -1,6 +1,9 @@
 const bcrypt = require('bcryptjs');
 const express = require('express');
 const jwt = require('jsonwebtoken');
+const fs = require('fs');
+const path = require('path');
+const multer = require('multer');
 const db = require('../services/db');
 const auth = require('../middleware/auth');
 const { jwtSecret } = require('../config/security');
@@ -28,6 +31,20 @@ router.post('/login', async (req, res, next) => {
 });
 
 router.use(auth);
+
+const uploadsDir = path.join(__dirname, '..', '..', 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (_req, _file, cb) => cb(null, uploadsDir),
+    filename: (_req, file, cb) => {
+      const ext = path.extname(file.originalname || '').toLowerCase() || '.jpg';
+      cb(null, `adm-${Date.now()}-${Math.random().toString(16).slice(2)}${ext}`);
+    }
+  }),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => cb(null, /^image\//i.test(file.mimetype || ''))
+});
 
 const paginate = (value, fallback) => Math.max(Number(value || fallback), 1);
 const SAFE_COLUMN_NAME = /^[a-z_]+$/i;
@@ -104,12 +121,32 @@ router.use('/news-categories', crudFactory({ table: 'news_category', fields: ['n
 router.use('/news', crudFactory({ table: 'news', fields: ['category_id', 'title', 'summary', 'content', 'cover_image', 'publish_time', 'status', 'sort'], orderBy: 'publish_time DESC, id DESC', filterCols: ['category_id', 'status'] }));
 router.use('/ads-positions', crudFactory({ table: 'ads_position', fields: ['name', 'code', 'status', 'sort'], orderBy: 'sort ASC, id DESC', filterCols: ['status'] }));
 router.use('/ads', crudFactory({ table: 'ads', fields: ['position_id', 'title', 'image_url', 'link_url', 'start_time', 'end_time', 'status', 'sort'], orderBy: 'sort ASC, id DESC', filterCols: ['position_id', 'status'] }));
-router.use('/experts', crudFactory({ table: 'expert', fields: ['name', 'avatar', 'intro', 'resume', 'status', 'sort'], orderBy: 'sort ASC, id DESC', filterCols: ['status'] }));
+router.use('/experts', crudFactory({ table: 'expert', fields: ['name', 'avatar', 'card_image', 'intro', 'resume', 'status', 'sort'], orderBy: 'sort ASC, id DESC', filterCols: ['status'] }));
 router.use('/mining-categories', crudFactory({ table: 'mining_category', fields: ['name', 'status', 'sort'], orderBy: 'sort ASC, id DESC', filterCols: ['status'] }));
 router.use('/mining-financing', crudFactory({ table: 'mining_financing', fields: ['category_id', 'title', 'province', 'city', 'region_desc', 'price_ref', 'summary', 'detail', 'publish_time', 'status', 'sort'], orderBy: 'publish_time DESC, id DESC', filterCols: ['category_id', 'province', 'status'] }));
 router.use('/products', crudFactory({ table: 'product', fields: ['name', 'cover_image', 'description', 'status', 'sort'], orderBy: 'sort ASC, id DESC', filterCols: ['status'] }));
 router.use('/albums', crudFactory({ table: 'album', fields: ['title', 'image_url', 'description', 'status', 'sort'], orderBy: 'sort ASC, id DESC', filterCols: ['status'] }));
 router.use('/messages', crudFactory({ table: 'message_feedback', fields: ['name', 'phone', 'email', 'content', 'reply', 'status', 'sort'], orderBy: 'id DESC', filterCols: ['status'] }));
+
+router.post('/upload-image', upload.single('file'), (req, res) => {
+  if (!req.file) return res.status(400).json({ message: '请上传图片文件' });
+  res.json({ url: `/uploads/${req.file.filename}` });
+});
+
+router.put('/password', async (req, res, next) => {
+  try {
+    const { old_password, new_password } = req.body;
+    if (!old_password || !new_password) return res.status(400).json({ message: '旧密码和新密码不能为空' });
+    if (String(new_password).length < 6) return res.status(400).json({ message: '新密码至少 6 位' });
+    const [rows] = await db.query('SELECT id, password_hash FROM admin_user WHERE id = ? LIMIT 1', [req.user.id]);
+    if (!rows.length) return res.status(404).json({ message: '管理员不存在' });
+    const ok = await bcrypt.compare(String(old_password), rows[0].password_hash || '');
+    if (!ok) return res.status(400).json({ message: '旧密码错误' });
+    const password_hash = await bcrypt.hash(String(new_password), 10);
+    await db.query('UPDATE admin_user SET password_hash = ?, updated_at = NOW() WHERE id = ?', [password_hash, req.user.id]);
+    res.json({ message: '管理员密码已更新' });
+  } catch (e) { next(e); }
+});
 
 router.get('/mining-inquiries', listFactory('mining_inquiry', 'id DESC', ['status']));
 router.put('/mining-inquiries/:id/reply', async (req, res, next) => {
@@ -141,6 +178,19 @@ router.put('/end-users/:id', async (req, res, next) => {
     if (status !== 0 && status !== 1) return res.status(400).json({ message: '状态值无效' });
     await db.query('UPDATE end_user SET status = ?, updated_at = NOW() WHERE id = ?', [status, req.params.id]);
     res.json({ message: status === 1 ? '账号已启用' : '账号已禁用' });
+  } catch (e) { next(e); }
+});
+
+router.put('/end-users/reset-password', async (req, res, next) => {
+  try {
+    const { account_username, new_password } = req.body;
+    if (!account_username || !new_password) return res.status(400).json({ message: '用户名和新密码必填' });
+    if (String(new_password).length < 6) return res.status(400).json({ message: '新密码至少 6 位' });
+    const [rows] = await db.query('SELECT id FROM end_user WHERE account_username = ? LIMIT 1', [account_username]);
+    if (!rows.length) return res.status(404).json({ message: '用户不存在' });
+    const password_hash = await bcrypt.hash(String(new_password), 10);
+    await db.query('UPDATE end_user SET password_hash = ?, updated_at = NOW() WHERE id = ?', [password_hash, rows[0].id]);
+    res.json({ message: '用户密码已重置' });
   } catch (e) { next(e); }
 });
 

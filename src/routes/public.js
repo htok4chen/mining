@@ -178,21 +178,33 @@ router.post('/messages', async (req, res, next) => {
 router.post('/mining-inquiries', async (req, res, next) => {
   try {
     const { financing_id, name, phone, content } = req.body;
-    if (!financing_id || !name || !phone) return res.status(400).json({ message: '项目、姓名、电话必填' });
+    if (!financing_id) return res.status(400).json({ message: '项目必填' });
 
-    // Optionally associate submission with logged-in user
+    let finalName = name;
+    let finalPhone = phone;
     let userId = null;
     const rawToken = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
     if (rawToken) {
       try {
         const payload = jwt.verify(rawToken, jwtSecret);
-        if (payload.role === 'user') userId = payload.id;
+        if (payload.role === 'user') {
+          userId = payload.id;
+          if (!finalName || !finalPhone) {
+            const [users] = await db.query('SELECT real_name, phone, status FROM end_user WHERE id = ? LIMIT 1', [userId]);
+            const user = users[0];
+            if (!user || user.status !== 1) return res.status(403).json({ message: '账号不可用，请重新登录' });
+            finalName = finalName || user.real_name;
+            finalPhone = finalPhone || user.phone;
+          }
+        }
       } catch (_) { /* anonymous submission is fine */ }
     }
 
+    if (!finalName || !finalPhone) return res.status(400).json({ message: '姓名、电话必填' });
+
     await db.query(
       'INSERT INTO mining_inquiry (financing_id, user_id, name, phone, content, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, NOW(), NOW())',
-      [financing_id, userId, name, phone, content || null]
+      [financing_id, userId, finalName, finalPhone, content || null]
     );
     res.json({ message: '提交成功' });
   } catch (e) { next(e); }

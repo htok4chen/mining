@@ -1,9 +1,65 @@
 const express = require('express');
+const bcrypt = require('bcryptjs');
 const db = require('../services/db');
 const userAuth = require('../middleware/userAuth');
 
 const router = express.Router();
 router.use(userAuth);
+
+router.get('/profile', async (req, res, next) => {
+  try {
+    const [rows] = await db.query(
+      `SELECT id, account_username, real_name, gender, title_or_position,
+              email, phone, company_name, business_scope
+       FROM end_user WHERE id = ?`,
+      [req.user.id]
+    );
+    if (!rows.length) return res.status(404).json({ message: '用户不存在' });
+    res.json(rows[0]);
+  } catch (e) { next(e); }
+});
+
+router.put('/profile', async (req, res, next) => {
+  try {
+    const payload = {};
+    ['real_name', 'title_or_position', 'email', 'phone', 'company_name', 'business_scope']
+      .forEach((k) => { if (req.body[k] !== undefined) payload[k] = String(req.body[k]).trim(); });
+    if (!Object.keys(payload).length) return res.status(400).json({ message: '无有效字段' });
+    if (!payload.real_name || !payload.title_or_position || !payload.email || !payload.phone || !payload.company_name) {
+      return res.status(400).json({ message: '姓名、职务、邮箱、手机、单位不能为空' });
+    }
+
+    const [dup] = await db.query(
+      'SELECT id, email, phone FROM end_user WHERE id <> ? AND (email = ? OR phone = ?) LIMIT 1',
+      [req.user.id, payload.email, payload.phone]
+    );
+    if (dup.length) {
+      if (dup[0].email === payload.email) return res.status(409).json({ message: '邮箱已被占用' });
+      if (dup[0].phone === payload.phone) return res.status(409).json({ message: '手机号已被占用' });
+    }
+
+    payload.updated_at = new Date();
+    await db.query('UPDATE end_user SET ? WHERE id = ?', [payload, req.user.id]);
+    res.json({ message: '个人信息已更新' });
+  } catch (e) { next(e); }
+});
+
+router.put('/password', async (req, res, next) => {
+  try {
+    const { old_password, new_password } = req.body;
+    if (!old_password || !new_password) return res.status(400).json({ message: '旧密码和新密码不能为空' });
+    if (String(new_password).length < 6) return res.status(400).json({ message: '新密码至少 6 位' });
+
+    const [rows] = await db.query('SELECT id, password_hash FROM end_user WHERE id = ? LIMIT 1', [req.user.id]);
+    if (!rows.length) return res.status(404).json({ message: '用户不存在' });
+    const ok = await bcrypt.compare(String(old_password), rows[0].password_hash || '');
+    if (!ok) return res.status(400).json({ message: '旧密码不正确' });
+
+    const password_hash = await bcrypt.hash(String(new_password), 10);
+    await db.query('UPDATE end_user SET password_hash = ?, updated_at = NOW() WHERE id = ?', [password_hash, req.user.id]);
+    res.json({ message: '密码修改成功' });
+  } catch (e) { next(e); }
+});
 
 // ── My financing posts ──────────────────────────────────────────────────────
 

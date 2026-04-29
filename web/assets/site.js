@@ -1,6 +1,6 @@
 const $ = (s) => document.querySelector(s);
 const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const safeUrl = (u) => (u && /^https?:\/\//i.test(u)) ? u : '#';
+const safeUrl = (u) => (u && (/^https?:\/\//i.test(u) || /^\//.test(u))) ? u : '#';
 const api = async (url, options) => {
   const r = await fetch(url, options);
   const ct = r.headers.get('content-type') || '';
@@ -23,15 +23,17 @@ const renderCards = (el, rows, mapFn) => {
 };
 
 async function loadHome() {
-  const [bannerAdsRaw, middleAdsRaw, newsRaw, expertsRaw, miningRaw] = await Promise.all([
+  const [bannerAdsRaw, middleAdsRaw, tileAdsRaw, newsRaw, expertsRaw, miningRaw] = await Promise.all([
     api('/api/public/ads?position=home_banner'),
     api('/api/public/ads?position=home_middle'),
+    api('/api/public/ads?position=home_tiles'),
     api('/api/public/news?page_size=6'),
     api('/api/public/experts'),
     api('/api/public/mining-financing?page_size=8')
   ]);
   const bannerAds = Array.isArray(bannerAdsRaw) ? bannerAdsRaw : [];
   const middleAds = Array.isArray(middleAdsRaw) ? middleAdsRaw : [];
+  const tileAds = Array.isArray(tileAdsRaw) ? tileAdsRaw : [];
   const news = newsRaw && Array.isArray(newsRaw.list) ? newsRaw : { list: [] };
   const experts = Array.isArray(expertsRaw) ? expertsRaw : [];
   const mining = miningRaw && Array.isArray(miningRaw.list) ? miningRaw : { list: [] };
@@ -50,6 +52,12 @@ async function loadHome() {
 
   const middle = $('#middleBanner');
   if (middle && middleAds.length) middle.innerHTML = `<a href="${safeUrl(middleAds[0].link_url)}"><img src="${esc(middleAds[0].image_url)}" alt="${esc(middleAds[0].title)}"></a>`;
+  const tiles = $('#homeAdsTiles');
+  if (tiles) {
+    tiles.innerHTML = tileAds.map((a, i) =>
+      `<a class="ad-tile ${i === 0 ? 'ad-tile-large' : ''}" href="${safeUrl(a.link_url)}"><img src="${esc(a.image_url)}" alt="${esc(a.title)}"></a>`
+    ).join('') || '<div>暂无广告</div>';
+  }
   const newsList = $('#homeNews');
   if (newsList) renderNewsList(newsList, news.list || []);
 
@@ -152,7 +160,7 @@ async function loadExpertDetail() {
   if (!id) { box.innerHTML = '<p>参数错误</p>'; return; }
   const data = await api(`/api/public/experts/${encodeURIComponent(id)}`);
   if (!data) { box.innerHTML = '<p>专家不存在</p>'; return; }
-  box.innerHTML = `<div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap"><img src="${esc(data.avatar || 'https://picsum.photos/120')}" alt="${esc(data.name)}" style="width:120px;height:120px;border-radius:50%;object-fit:cover"><div><h1 style="margin:0 0 8px">${esc(data.name)}</h1><p>${esc(data.title || '')}</p><p>${esc(data.intro || '')}</p></div></div>`;
+  box.innerHTML = `<div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap"><img src="${esc(data.avatar || 'https://picsum.photos/120')}" alt="${esc(data.name)}" style="width:120px;height:120px;border-radius:50%;object-fit:cover"><div><h1 style="margin:0 0 8px">${esc(data.name)}</h1><p>${esc(data.title || '')}</p><p>${esc(data.intro || '')}</p>${data.card_image ? `<p style="margin-top:10px"><a class="detail-link" href="${esc(data.card_image)}" target="_blank" rel="noopener">查看专家名片</a></p>` : ''}</div></div>`;
 }
 
 async function loadFinanceDetail() {
@@ -166,8 +174,7 @@ async function loadFinanceDetail() {
   const inquirySection = isLoggedIn
     ? `<form onsubmit="siteApp.submitInquiry(event)" style="margin-top:18px">
         <h3>在线洽谈</h3>
-        <div class="form-row"><label>姓名</label><input id="iqName" required></div>
-        <div class="form-row"><label>电话</label><input id="iqPhone" required></div>
+        <p style="margin:0 0 10px;color:#5a6d84">已登录用户无需重复填写姓名和电话，可直接留言。</p>
         <div class="form-row"><label>留言</label><textarea id="iqContent" rows="4"></textarea></div>
         <input type="hidden" id="iqFinId" value="${esc(data.id)}">
         <button type="submit">提交洽谈</button>
@@ -211,8 +218,6 @@ async function submitInquiry(e) {
   }
   const payload = {
     financing_id: $('#iqFinId').value,
-    name: $('#iqName').value,
-    phone: $('#iqPhone').value,
     content: $('#iqContent').value
   };
   const res = await api('/api/public/mining-inquiries', {
@@ -221,7 +226,7 @@ async function submitInquiry(e) {
     body: JSON.stringify(payload)
   });
   alert((res && res.message) || '提交成功');
-  if (res) { $('#iqName').value = ''; $('#iqPhone').value = ''; $('#iqContent').value = ''; }
+  if (res) { $('#iqContent').value = ''; }
 }
 
 window.siteApp = { loadHome, loadProducts, loadAlbums, loadNewsPage, loadMiningPage, loadExperts, submitMessage, loadNewsDetail, loadAdDetail, loadExpertDetail, loadFinanceDetail, loadAlbumDetail, loadProductDetail, submitInquiry };

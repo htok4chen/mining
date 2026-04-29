@@ -1,0 +1,66 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>收到的洽谈 - 矿业信息服务平台</title><link rel="stylesheet" href="/assets/style.css"></head><body>
+<script src="/assets/layout.js"></script>
+<div class="container">
+  <div class="uc-layout">
+    <aside class="uc-sidebar">
+      <a href="/user-center.html">🏠 个人中心</a>
+      <a href="/user-financing.html">📋 我的融资信息</a>
+      <a href="/user-received.html" class="active">💬 收到的洽谈</a>
+      <a href="/user-sent.html">📨 我的洽谈记录</a>
+    </aside>
+    <main class="uc-main">
+      <h2>收到的洽谈</h2>
+      <p style="font-size:13px;color:#8ea1b7;margin:-10px 0 14px">以下是他人对您发布的融资信息提交的洽谈申请。</p>
+      <div id="recList"><div style="color:#8ea1b7;padding:20px 0">加载中...</div></div>
+    </main>
+  </div>
+</div>
+<script src="/assets/site.js"></script>
+<script>
+(function () {
+  const token = localStorage.getItem('user_token');
+  if (!token) { location.replace('/login.html?redirect=' + encodeURIComponent(location.href)); return; }
+  const authHdr = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+  const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  const finId = new URLSearchParams(location.search).get('fin_id');
+  let currentPage = 1;
+
+  async function loadList(page) {
+    currentPage = page || 1;
+    const box = document.getElementById('recList');
+    box.innerHTML = '<div style="color:#8ea1b7;padding:20px 0">加载中...</div>';
+    try {
+      const url = finId
+        ? `/api/user/my-financing/${encodeURIComponent(finId)}/inquiries?page=${currentPage}&page_size=20`
+        : `/api/user/received-inquiries?page=${currentPage}&page_size=20`;
+      const r = await fetch(url, { headers: authHdr });
+      if (r.status === 401) { localStorage.removeItem('user_token'); location.replace('/login.html'); return; }
+      const data = await r.json();
+      const rows = data.list || [];
+      if (!rows.length) { box.innerHTML = '<div class="uc-empty">暂无收到的洽谈申请。</div>'; return; }
+      const statusLabel = (s) => s === 0 ? '<span class="tag tag-off">未读</span>' : '<span class="tag tag-on">已读</span>';
+      box.innerHTML = `<table class="uc-table"><thead><tr><th>融资项目</th><th>洽谈人</th><th>联系电话</th><th>留言</th><th>状态</th><th>时间</th></tr></thead><tbody>
+        ${rows.map(r => `<tr>
+          <td><a href="/finance-detail.html?id=${encodeURIComponent(r.financing_id)}" target="_blank" style="color:var(--primary)">${esc(r.post_title || r.financing_id)}</a></td>
+          <td>${esc(r.name)}</td>
+          <td>${esc(r.phone)}</td>
+          <td style="max-width:200px;word-break:break-all">${esc(r.content || '-')}</td>
+          <td>${statusLabel(r.status)}</td>
+          <td>${esc((r.created_at || '').slice(0, 16))}</td>
+        </tr>`).join('')}
+      </tbody></table>
+      <div style="margin-top:12px;font-size:13px;color:#8ea1b7">共 ${data.total} 条
+        ${currentPage > 1 ? `<a href="#" onclick="loadList(${currentPage - 1});return false" style="margin-left:10px">上一页</a>` : ''}
+        ${data.total > currentPage * 20 ? `<a href="#" onclick="loadList(${currentPage + 1});return false" style="margin-left:10px">下一页</a>` : ''}
+      </div>`;
+    } catch (_) {
+      box.innerHTML = '<div class="uc-empty">加载失败，请刷新重试</div>';
+    }
+  }
+
+  window.loadList = loadList;
+  loadList(1);
+})();
+</script>
+</body></html>

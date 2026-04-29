@@ -1,8 +1,0 @@
-<!doctype html>
-<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>用户与密码管理</title><link rel="stylesheet" href="../assets/css/admin.css"></head>
-<body><aside class="admin-side"><h3>后台演示</h3><a href="index.html">仪表盘</a><a href="ads.html">广告管理</a><a href="experts.html">专家管理</a><a class="on" href="users.html">用户与密码</a><a href="finance.html">融资管理</a><a href="news.html">新闻管理</a><a href="messages.html">留言管理</a></aside>
-<main class="admin-main"><h2>用户与密码管理</h2>
-<section class="panel"><h3>管理员修改密码</h3><form id="adminPasswordForm"><div class="form-grid"><div><label>旧密码</label><input type="password" name="oldPassword" required></div><div><label>新密码</label><input type="password" name="newPassword" required></div><div><label>确认新密码</label><input type="password" name="confirmPassword" required></div></div><p><button type="submit">更新管理员密码</button></p></form></section>
-<section class="panel"><h3>重置用户密码</h3><form id="userResetForm"><div class="form-grid"><div><label>用户名</label><input name="username" required placeholder="如：demo_user"></div><div><label>新密码</label><input type="password" name="newPassword" required></div></div><p><button type="submit">重置用户密码</button></p></form></section>
-<section class="panel"><h3>用户列表</h3><table><thead><tr><th>用户名</th><th>姓名</th><th>电话</th><th>邮箱</th></tr></thead><tbody id="adminUsersTable"></tbody></table></section></main>
-<script src="../assets/js/data.js"></script><script src="../assets/js/admin.js"></script></body></html>

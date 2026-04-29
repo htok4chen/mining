@@ -1,0 +1,190 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>我的融资信息 - 矿业信息服务平台</title><link rel="stylesheet" href="/assets/style.css"></head><body>
+<script src="/assets/layout.js"></script>
+<div class="container">
+  <div class="uc-layout">
+    <aside class="uc-sidebar">
+      <a href="/user-center.html">🏠 个人中心</a>
+      <a href="/user-financing.html" class="active">📋 我的融资信息</a>
+      <a href="/user-received.html">💬 收到的洽谈</a>
+      <a href="/user-sent.html">📨 我的洽谈记录</a>
+    </aside>
+    <main class="uc-main">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <h2 style="margin:0;color:var(--primary)">我的融资信息</h2>
+        <button onclick="openCreateModal()" style="font-size:13px;padding:6px 14px">+ 发布融资信息</button>
+      </div>
+      <div id="finList"><div style="color:#8ea1b7;padding:20px 0 10px">加载中...</div></div>
+    </main>
+  </div>
+</div>
+
+<!-- Create / Edit Modal -->
+<div class="modal-overlay" id="finModal">
+  <div class="modal-box">
+    <h3 id="modalTitle">发布融资信息</h3>
+    <form id="finForm" onsubmit="submitFinForm(event)" novalidate>
+      <div class="form-row"><label>标题<span class="req">*</span></label><input id="fTitle" class="form-input" required placeholder="请输入融资项目标题"></div>
+      <div class="split">
+        <div class="form-row"><label>省份</label><input id="fProvince" class="form-input" placeholder="如：山西"></div>
+        <div class="form-row"><label>城市</label><input id="fCity" class="form-input" placeholder="如：太原"></div>
+      </div>
+      <div class="form-row"><label>地区描述</label><input id="fRegionDesc" class="form-input" placeholder="详细地区说明（选填）"></div>
+      <div class="form-row"><label>参考价格（万元）</label><input id="fPriceRef" class="form-input" type="number" min="0" step="0.01" placeholder="选填"></div>
+      <div class="form-row"><label>摘要</label><textarea id="fSummary" class="form-input" rows="2" placeholder="一句话介绍项目（选填）"></textarea></div>
+      <div class="form-row"><label>详细说明</label><textarea id="fDetail" class="form-input" rows="4" placeholder="项目详情（选填）"></textarea></div>
+      <input type="hidden" id="fEditId">
+      <div id="finFormErr" class="form-err"></div>
+      <div class="modal-footer">
+        <button type="button" onclick="closeModal()" style="background:#8ea1b7">取消</button>
+        <button type="submit" id="finSubmitBtn">提交</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="/assets/site.js"></script>
+<script>
+(function () {
+  const token = localStorage.getItem('user_token');
+  if (!token) { location.replace('/login.html?redirect=' + encodeURIComponent(location.href)); return; }
+  const authHdr = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+  const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  let currentPage = 1;
+  const rowCache = new Map();
+
+  async function loadList(page) {
+    currentPage = page || 1;
+    const box = document.getElementById('finList');
+    box.innerHTML = '<div style="color:#8ea1b7;padding:20px 0">加载中...</div>';
+    try {
+      const r = await fetch(`/api/user/my-financing?page=${currentPage}&page_size=10`, { headers: authHdr });
+      if (r.status === 401) { localStorage.removeItem('user_token'); location.replace('/login.html'); return; }
+      const data = await r.json();
+      const rows = data.list || [];
+      rowCache.clear();
+      rows.forEach(row => rowCache.set(row.id, row));
+      if (!rows.length) { box.innerHTML = '<div class="uc-empty">暂无融资信息，点击右上角"发布融资信息"开始发布。</div>'; return; }
+      const statusLabel = (s) => s === 1 ? '<span class="tag tag-on">展示中</span>' : '<span class="tag tag-off">已下线</span>';
+      box.innerHTML = `<table class="uc-table"><thead><tr><th>标题</th><th>地区</th><th>参考价格</th><th>状态</th><th>发布时间</th><th>操作</th></tr></thead><tbody>
+        ${rows.map(r => `<tr>
+          <td><a href="/finance-detail.html?id=${encodeURIComponent(r.id)}" target="_blank" style="color:var(--primary)">${esc(r.title)}</a></td>
+          <td>${esc(r.province || '')}${esc(r.city ? ' ' + r.city : '')}</td>
+          <td>${r.price_ref ? esc(r.price_ref) + ' 万元' : '-'}</td>
+          <td>${statusLabel(r.status)}</td>
+          <td>${esc((r.publish_time || r.created_at || '').slice(0, 10))}</td>
+          <td>
+            <button class="uc-act-btn" onclick="openEditModal(${r.id})">编辑</button>
+            <button class="uc-act-btn" onclick="toggleStatus(${r.id}, ${r.status})">${r.status === 1 ? '下线' : '上线'}</button>
+            <button class="uc-act-btn danger" onclick="deletePost(${r.id})">删除</button>
+            <a href="/user-received.html?fin_id=${encodeURIComponent(r.id)}" class="uc-act-btn" style="background:#0b5fb3;color:#fff;text-decoration:none;display:inline-block">洽谈(${r.inquiry_count || 0})</a>
+          </td>
+        </tr>`).join('')}
+      </tbody></table>
+      <div style="margin-top:12px;font-size:13px;color:#8ea1b7">共 ${data.total} 条
+        ${currentPage > 1 ? `<a href="#" onclick="loadList(${currentPage - 1});return false" style="margin-left:10px">上一页</a>` : ''}
+        ${data.total > currentPage * 10 ? `<a href="#" onclick="loadList(${currentPage + 1});return false" style="margin-left:10px">下一页</a>` : ''}
+      </div>`;
+    } catch (_) {
+      box.innerHTML = '<div class="uc-empty">加载失败，请刷新重试</div>';
+    }
+  }
+
+  function openCreateModal() {
+    document.getElementById('modalTitle').textContent = '发布融资信息';
+    document.getElementById('finForm').reset();
+    document.getElementById('fEditId').value = '';
+    document.getElementById('finFormErr').textContent = '';
+    document.getElementById('finModal').classList.add('open');
+  }
+
+  function openEditModal(id) {
+    const r = rowCache.get(id);
+    if (!r) { alert('数据不存在，请刷新后重试'); return; }
+    document.getElementById('modalTitle').textContent = '编辑融资信息';
+    document.getElementById('fTitle').value = r.title || '';
+    document.getElementById('fProvince').value = r.province || '';
+    document.getElementById('fCity').value = r.city || '';
+    document.getElementById('fRegionDesc').value = r.region_desc || '';
+    document.getElementById('fPriceRef').value = r.price_ref || '';
+    document.getElementById('fSummary').value = r.summary || '';
+    document.getElementById('fDetail').value = r.detail || '';
+    document.getElementById('fEditId').value = r.id;
+    document.getElementById('finFormErr').textContent = '';
+    document.getElementById('finModal').classList.add('open');
+  }
+
+  function closeModal() {
+    document.getElementById('finModal').classList.remove('open');
+  }
+
+  async function submitFinForm(e) {
+    e.preventDefault();
+    const err = document.getElementById('finFormErr');
+    err.textContent = '';
+    const title = document.getElementById('fTitle').value.trim();
+    if (!title) { err.textContent = '请输入标题'; return; }
+    const editId = document.getElementById('fEditId').value;
+    const payload = {
+      title,
+      province: document.getElementById('fProvince').value.trim() || null,
+      city: document.getElementById('fCity').value.trim() || null,
+      region_desc: document.getElementById('fRegionDesc').value.trim() || null,
+      price_ref: document.getElementById('fPriceRef').value || null,
+      summary: document.getElementById('fSummary').value.trim() || null,
+      detail: document.getElementById('fDetail').value.trim() || null
+    };
+    const btn = document.getElementById('finSubmitBtn');
+    btn.disabled = true; btn.textContent = '提交中…';
+    try {
+      const url = editId ? `/api/user/my-financing/${editId}` : '/api/user/my-financing';
+      const method = editId ? 'PUT' : 'POST';
+      const r = await fetch(url, { method, headers: authHdr, body: JSON.stringify(payload) });
+      const data = await r.json();
+      if (!r.ok) { err.textContent = data.message || '操作失败'; return; }
+      closeModal();
+      loadList(1);
+    } catch (_) {
+      err.textContent = '网络错误，请稍后重试';
+    } finally {
+      btn.disabled = false; btn.textContent = '提交';
+    }
+  }
+
+  async function toggleStatus(id, currentStatus) {
+    const newStatus = currentStatus === 1 ? 0 : 1;
+    try {
+      const r = await fetch(`/api/user/my-financing/${id}`, {
+        method: 'PUT', headers: authHdr, body: JSON.stringify({ status: newStatus })
+      });
+      const data = await r.json();
+      if (!r.ok) { alert(data.message || '操作失败'); return; }
+      loadList(currentPage);
+    } catch (_) { alert('网络错误，请稍后重试'); }
+  }
+
+  async function deletePost(id) {
+    if (!confirm('确认删除该融资信息？此操作不可恢复。')) return;
+    try {
+      const r = await fetch(`/api/user/my-financing/${id}`, { method: 'DELETE', headers: authHdr });
+      const data = await r.json();
+      if (!r.ok) { alert(data.message || '删除失败'); return; }
+      loadList(currentPage);
+    } catch (_) { alert('网络错误，请稍后重试'); }
+  }
+
+  document.getElementById('finModal').addEventListener('click', function(e) {
+    if (e.target === this) closeModal();
+  });
+
+  window.openCreateModal = openCreateModal;
+  window.openEditModal = openEditModal;
+  window.closeModal = closeModal;
+  window.submitFinForm = submitFinForm;
+  window.toggleStatus = toggleStatus;
+  window.deletePost = deletePost;
+
+  loadList(1);
+})();
+</script>
+</body></html>

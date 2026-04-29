@@ -1,23 +1,70 @@
 window.DEMO_DATA = {
   ads: {
     HOME_TOP_BANNER: [
-      { title: "顶部广告1", imageUrl: "https://picsum.photos/1200/320?random=11", linkUrl: "#" },
-      { title: "顶部广告2", imageUrl: "https://picsum.photos/1200/320?random=12", linkUrl: "#" },
-      { title: "顶部广告3", imageUrl: "https://picsum.photos/1200/320?random=13", linkUrl: "#" }
+      { id: "top-1", title: "顶部广告1", imageUrl: "https://picsum.photos/1200/320?random=11", linkUrl: "#", status: "online" },
+      { id: "top-2", title: "顶部广告2", imageUrl: "https://picsum.photos/1200/320?random=12", linkUrl: "#", status: "online" },
+      { id: "top-3", title: "顶部广告3", imageUrl: "https://picsum.photos/1200/320?random=13", linkUrl: "#", status: "offline" }
     ],
     HOME_MID_BANNER: [
-      { title: "中部通栏", imageUrl: "https://picsum.photos/1200/120?random=21", linkUrl: "#" }
+      { id: "mid-1", title: "中部通栏", imageUrl: "https://picsum.photos/1200/120?random=21", linkUrl: "#", status: "online" }
     ],
     HOME_BOTTOM_BANNER: [
-      { title: "底部通栏", imageUrl: "https://picsum.photos/1200/120?random=31", linkUrl: "#" }
+      { id: "bottom-1", title: "底部通栏", imageUrl: "https://picsum.photos/1200/120?random=31", linkUrl: "#", status: "online" }
+    ],
+    HOME_TILE: [
+      { id: "tile-1", title: "广告位招商", imageUrl: "https://picsum.photos/400/210?random=61", linkUrl: "#", status: "online", size: "large" },
+      { id: "tile-2", title: "矿权合作", imageUrl: "https://picsum.photos/400/100?random=62", linkUrl: "#", status: "online", size: "small" },
+      { id: "tile-3", title: "项目路演", imageUrl: "https://picsum.photos/400/100?random=63", linkUrl: "#", status: "online", size: "small" },
+      { id: "tile-4", title: "设备招商", imageUrl: "https://picsum.photos/400/100?random=64", linkUrl: "#", status: "online", size: "small" },
+      { id: "tile-5", title: "技术服务", imageUrl: "https://picsum.photos/400/100?random=65", linkUrl: "#", status: "online", size: "small" },
+      { id: "tile-6", title: "广告位预留", imageUrl: "https://picsum.photos/400/100?random=66", linkUrl: "#", status: "online", size: "small" }
     ]
   },
 
   experts: [
-    { id: 1, name: "任广智", title: "高级顾问", avatarUrl: "https://picsum.photos/120/150?random=41", summary: "中南大学地勘专业，长期从事矿业评估与管理咨询。" },
-    { id: 2, name: "王建国", title: "高级工程师", avatarUrl: "https://picsum.photos/120/150?random=42", summary: "专注矿山安全与智能化开采技术，具备多项目实战经验。" },
-    { id: 3, name: "李海峰", title: "投融资顾问", avatarUrl: "https://picsum.photos/120/150?random=43", summary: "擅长矿权投融资、资源整合与尽调风控方案设计。" }
+    {
+      id: 1,
+      name: "任广智",
+      title: "高级顾问",
+      avatarUrl: "https://picsum.photos/120/150?random=41",
+      cardImageUrl: "https://picsum.photos/360/220?random=141",
+      summary: "中南大学地勘专业，长期从事矿业评估与管理咨询。",
+      status: "online"
+    },
+    {
+      id: 2,
+      name: "王建国",
+      title: "高级工程师",
+      avatarUrl: "https://picsum.photos/120/150?random=42",
+      cardImageUrl: "https://picsum.photos/360/220?random=142",
+      summary: "专注矿山安全与智能化开采技术，具备多项目实战经验。",
+      status: "online"
+    },
+    {
+      id: 3,
+      name: "李海峰",
+      title: "投融资顾问",
+      avatarUrl: "https://picsum.photos/120/150?random=43",
+      cardImageUrl: "https://picsum.photos/360/220?random=143",
+      summary: "擅长矿权投融资、资源整合与尽调风控方案设计。",
+      status: "online"
+    }
   ],
+
+  users: [
+    {
+      username: "demo_user",
+      password: "123456",
+      name: "张先生",
+      phone: "13520414558",
+      email: "demo_user@example.com"
+    }
+  ],
+
+  admin: {
+    username: "admin",
+    password: "admin123"
+  },
 
   products: [
     { id: 101, title: "矿权评估服务", cover: "https://picsum.photos/400/260?random=51", summary: "为矿业项目提供价值评估、交易定价支持与合规建议。" },
@@ -28,7 +75,7 @@ window.DEMO_DATA = {
 
   news: [
     { id: 201, title: "某省发布新一轮矿产资源规划政策解读", date: "2026-04-10", summary: "围绕矿产资源配置、开发强度与生态保护提出新要求。" },
-    { id: 202, title: "矿山智能化建���提速，行业迎来升级窗口", date: "2026-04-08", summary: "智能调度、无人巡检、数字孪生等技术加速落地。" },
+    { id: 202, title: "矿山智能化建设提速，行业迎来升级窗口", date: "2026-04-08", summary: "智能调度、无人巡检、数字孪生等技术加速落地。" },
     { id: 203, title: "矿权融资需求增长，项目筛选趋于精细化", date: "2026-04-06", summary: "机构关注储量真实性、现金流与合规能力三大指标。" },
     { id: 204, title: "绿色矿山标准持续完善，企业进入提质期", date: "2026-04-03", summary: "环保指标与能耗管控将成为核心竞争力之一。" }
   ],

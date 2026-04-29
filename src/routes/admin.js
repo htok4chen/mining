@@ -181,7 +181,7 @@ router.put('/end-users/:id', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-router.put('/end-users/reset-password', async (req, res, next) => {
+router.post('/end-users/reset-password', async (req, res, next) => {
   try {
     const { account_username, new_password } = req.body;
     if (!account_username || !new_password) return res.status(400).json({ message: '用户名和新密码必填' });

@@ -717,7 +717,7 @@ const adminApp = (() => {
       const new_password = String(fd.get('new_password') || '');
       if (new_password.length < 6) return toast('新密码至少 6 位', 'error');
       try {
-        const res = await callApi('end-users/reset-password', { method: 'PUT', body: JSON.stringify({ account_username, new_password }) });
+        const res = await callApi('end-users/reset-password', { method: 'POST', body: JSON.stringify({ account_username, new_password }) });
         toast(res.message || '用户密码已重置');
         e.target.reset();
       } catch (err) {

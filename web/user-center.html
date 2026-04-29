@@ -24,7 +24,7 @@
   const activeId = sideMap[page];
   if (activeId) { const el = document.getElementById(activeId); if (el) el.classList.add('active'); }
 
-  const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   const authHdr = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
 
   async function loadDashboard() {

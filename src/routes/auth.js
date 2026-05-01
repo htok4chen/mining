@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const db = require('../services/db');
+const { ensureNoForbiddenWords } = require('../services/forbiddenWords');
 const { jwtSecret } = require('../config/security');
 
 const router = express.Router();
@@ -32,6 +33,22 @@ router.post('/register', async (req, res, next) => {
     if (emailParts.length !== 2 || !emailParts[0] || !emailParts[1].includes('.') || !emailParts[1].split('.').pop()) {
       return res.status(400).json({ message: '邮箱格式不正确' });
     }
+    const hit = await ensureNoForbiddenWords([
+      account_username,
+      real_name,
+      title_or_position,
+      email,
+      phone,
+      landline_country_code,
+      landline_area_code,
+      landline_number,
+      fax_country_code,
+      fax_area_code,
+      fax_number,
+      company_name,
+      business_scope
+    ]);
+    if (hit) return res.status(400).json({ message: '内容违规，请修改后提交' });
 
     const [dupRows] = await db.query(
       'SELECT account_username, email, phone FROM end_user WHERE account_username = ? OR email = ? OR phone = ? LIMIT 3',

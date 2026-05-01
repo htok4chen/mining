@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const db = require('../services/db');
+const { ensureNoForbiddenWords } = require('../services/forbiddenWords');
 const userAuth = require('../middleware/userAuth');
 
 const router = express.Router();
@@ -28,6 +29,15 @@ router.put('/profile', async (req, res, next) => {
     if (!payload.real_name || !payload.title_or_position || !payload.email || !payload.phone || !payload.company_name) {
       return res.status(400).json({ message: '姓名、职务、邮箱、手机、单位不能为空' });
     }
+    const hit = await ensureNoForbiddenWords([
+      payload.real_name,
+      payload.title_or_position,
+      payload.email,
+      payload.phone,
+      payload.company_name,
+      payload.business_scope
+    ]);
+    if (hit) return res.status(400).json({ message: '内容违规，请修改后提交' });
 
     const [dup] = await db.query(
       'SELECT id, email, phone FROM end_user WHERE id <> ? AND (email = ? OR phone = ?) LIMIT 1',
@@ -91,6 +101,8 @@ router.post('/my-financing', async (req, res, next) => {
   try {
     const { category_id, title, province, city, region_desc, price_ref, summary, detail } = req.body;
     if (!title || !title.trim()) return res.status(400).json({ message: '标题不能为空' });
+    const hit = await ensureNoForbiddenWords([title, province, city, region_desc, summary, detail]);
+    if (hit) return res.status(400).json({ message: '内容违规，请修改后提交' });
     const [result] = await db.query(
       `INSERT INTO mining_financing
          (user_id, category_id, title, province, city, region_desc, price_ref, summary, detail,
@@ -143,6 +155,15 @@ router.put('/my-financing/:id', async (req, res, next) => {
     if (payload.title !== undefined && !String(payload.title).trim()) {
       return res.status(400).json({ message: '标题不能为空' });
     }
+    const hit = await ensureNoForbiddenWords([
+      payload.title,
+      payload.province,
+      payload.city,
+      payload.region_desc,
+      payload.summary,
+      payload.detail
+    ]);
+    if (hit) return res.status(400).json({ message: '内容违规，请修改后提交' });
     payload.updated_at = new Date();
     await db.query('UPDATE mining_financing SET ? WHERE id = ? AND user_id = ?', [payload, req.params.id, req.user.id]);
     res.json({ message: '更新成功' });

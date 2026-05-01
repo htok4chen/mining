@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const db = require('../services/db');
+const { ensureNoForbiddenWords } = require('../services/forbiddenWords');
 const { jwtSecret } = require('../config/security');
 
 const router = express.Router();
@@ -167,6 +168,8 @@ router.post('/messages', async (req, res, next) => {
   try {
     const { name, phone, email, content } = req.body;
     if (!name || !content) return res.status(400).json({ message: '姓名和内容必填' });
+    const hit = await ensureNoForbiddenWords([name, phone, email, content]);
+    if (hit) return res.status(400).json({ message: '内容违规，请修改后提交' });
     await db.query(
       'INSERT INTO message_feedback (name, phone, email, content, status, created_at, updated_at) VALUES (?, ?, ?, ?, 0, NOW(), NOW())',
       [name, phone || null, email || null, content]
@@ -201,6 +204,8 @@ router.post('/mining-inquiries', async (req, res, next) => {
     }
 
     if (!finalName || !finalPhone) return res.status(400).json({ message: '姓名、电话必填' });
+    const hit = await ensureNoForbiddenWords([finalName, finalPhone, content]);
+    if (hit) return res.status(400).json({ message: '内容违规，请修改后提交' });
 
     await db.query(
       'INSERT INTO mining_inquiry (financing_id, user_id, name, phone, content, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, 0, NOW(), NOW())',

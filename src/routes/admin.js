@@ -45,6 +45,20 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => cb(null, /^image\//i.test(file.mimetype || ''))
 });
+const uploadForbiddenWords = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const name = String(file.originalname || '').toLowerCase();
+    const type = String(file.mimetype || '').toLowerCase();
+    const ok = type.startsWith('text/')
+      || type === 'application/csv'
+      || type === 'application/vnd.ms-excel'
+      || name.endsWith('.txt')
+      || name.endsWith('.csv');
+    cb(null, ok);
+  }
+});
 
 const paginate = (value, fallback) => Math.max(Number(value || fallback), 1);
 const SAFE_COLUMN_NAME = /^[a-z_]+$/i;
@@ -128,9 +142,40 @@ router.use('/products', crudFactory({ table: 'product', fields: ['name', 'cover_
 router.use('/albums', crudFactory({ table: 'album', fields: ['title', 'image_url', 'description', 'status', 'sort'], orderBy: 'sort ASC, id DESC', filterCols: ['status'] }));
 router.use('/messages', crudFactory({ table: 'message_feedback', fields: ['name', 'phone', 'email', 'content', 'reply', 'status', 'sort'], orderBy: 'id DESC', filterCols: ['status'] }));
 
+router.use('/forbidden-words', crudFactory({ table: 'forbidden_word', fields: ['word', 'remark', 'status', 'sort'], orderBy: 'sort ASC, id DESC', filterCols: ['status'] }));
+
 router.post('/upload-image', upload.single('file'), (req, res) => {
   if (!req.file) return res.status(400).json({ message: '请上传图片文件' });
   res.json({ url: `/uploads/${req.file.filename}` });
+});
+
+router.post('/forbidden-words/import-file', uploadForbiddenWords.single('file'), async (req, res, next) => {
+  try {
+    if (!req.file || !req.file.buffer) return res.status(400).json({ message: '请上传 txt/csv 文件' });
+    const text = req.file.buffer.toString('utf8');
+    const wordsRaw = text
+      .split(/[\r\n,，;\t]+/)
+      .map((w) => String(w || '').trim().replace(/^["'“”‘’]|["'“”‘’]$/g, ''))
+      .filter(Boolean);
+    const words = Array.from(new Set(wordsRaw)).filter((w) => w.length <= 100);
+    if (!words.length) return res.status(400).json({ message: '文件中没有可导入的有效词条' });
+
+    const placeholders = words.map(() => '?').join(',');
+    const [existRows] = await db.query(`SELECT word FROM forbidden_word WHERE word IN (${placeholders})`, words);
+    const existing = new Set(existRows.map((r) => r.word));
+
+    for (const word of words) {
+      await db.query(
+        'INSERT INTO forbidden_word (word, remark, status, sort, created_at, updated_at) VALUES (?, NULL, 1, 0, NOW(), NOW()) ON DUPLICATE KEY UPDATE status = VALUES(status), updated_at = NOW()',
+        [word]
+      );
+    }
+
+    const skipped = wordsRaw.length - words.length;
+    const updated = Array.from(existing).length;
+    const inserted = words.length - updated;
+    res.json({ message: '导入完成', total: words.length, inserted, updated, skipped });
+  } catch (e) { next(e); }
 });
 
 router.put('/password', async (req, res, next) => {

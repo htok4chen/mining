@@ -27,6 +27,7 @@ const adminApp = (() => {
       items: [
         { key: 'news-categories', label: '新闻分类' },
         { key: 'news', label: '新闻管理' },
+        { key: 'forbidden-words', label: '违禁词表' },
       ],
     },
     {
@@ -127,6 +128,34 @@ const adminApp = (() => {
         { k: 'sort',         l: '排序',       type: 'number',             ph: '数字越小越靠前' },
         { k: 'status',       l: '状态',       type: 'select', opts: [{ v: 1, l: '启用' }, { v: 0, l: '停用' }] },
       ],
+    },
+
+    'forbidden-words': {
+      label: '违禁词表',
+      api: 'forbidden-words',
+      canToggle: true,
+      searchFields: [
+        { k: 'status', l: '状态', type: 'select', opts: [{ v: '', l: '全部状态' }, { v: 1, l: '启用' }, { v: 0, l: '停用' }] },
+      ],
+      listCols: [
+        { k: 'id',         l: 'ID', w: '60px' },
+        { k: 'word',       l: '词条' },
+        { k: 'remark',     l: '备注', trunc: true },
+        { k: 'sort',       l: '排序', w: '70px' },
+        { k: 'status',     l: '状态', badge: 'status' },
+        { k: 'updated_at', l: '更新时间', date: true },
+      ],
+      formFields: [
+        { k: 'word',   l: '词条', type: 'text', req: true, ph: '请输入违禁词（唯一）' },
+        { k: 'remark', l: '备注', type: 'text',            ph: '可选备注说明' },
+        { k: 'sort',   l: '排序', type: 'number',          ph: '数字越小越靠前' },
+        { k: 'status', l: '状态', type: 'select', opts: [{ v: 1, l: '启用' }, { v: 0, l: '停用' }] },
+      ],
+      importFile: {
+        endpoint: 'forbidden-words/import-file',
+        accept: '.txt,.csv,text/plain,text/csv',
+        buttonText: '⬆ 批量导入词表',
+      },
     },
 
     'ads-positions': {
@@ -491,6 +520,25 @@ const adminApp = (() => {
     return data.url;
   };
 
+  const uploadDataFile = async (endpoint, file) => {
+    const fd = new FormData();
+    fd.append('file', file);
+    const res = await fetch('/api/admin/' + endpoint, {
+      method: 'POST',
+      headers: state.token ? { Authorization: `Bearer ${state.token}` } : {},
+      body: fd,
+    });
+    const ct = res.headers.get('content-type') || '';
+    if (!ct.includes('application/json')) throw new Error(`上传失败 (${res.status})`);
+    const data = await res.json();
+    if (res.status === 401) {
+      doLogout();
+      throw new Error('登录已过期，请重新登录');
+    }
+    if (!res.ok) throw new Error(data.message || '上传失败');
+    return data;
+  };
+
   // =====================================================
   // TOAST
   // =====================================================
@@ -636,15 +684,45 @@ const adminApp = (() => {
     const createBtn = mod.canCreate !== false
       ? `<button class="btn-primary" id="btnCreate">+ 新增${esc(mod.label)}</button>`
       : '';
+    const importBtn = mod.importFile
+      ? `<button class="btn-default" id="btnImportFile">${esc(mod.importFile.buttonText || '批量导入')}</button>
+         <input id="importFileInput" type="file" accept="${esc(mod.importFile.accept || '.txt,.csv')}" style="display:none">`
+      : '';
 
     main.innerHTML = `
       ${searchHtml}
-      <div class="adm-toolbar">${createBtn}</div>
+      <div class="adm-toolbar">${createBtn}${importBtn}</div>
       <div class="adm-table-wrap"><div id="admTableInner"><div class="adm-loading">⏳ 加载中...</div></div></div>
       <div id="admPagination" class="adm-pagination"></div>`;
 
     if (mod.canCreate !== false) {
       document.getElementById('btnCreate')?.addEventListener('click', openCreate);
+    }
+    if (mod.importFile) {
+      const btn = document.getElementById('btnImportFile');
+      const input = document.getElementById('importFileInput');
+      btn?.addEventListener('click', () => input?.click());
+      input?.addEventListener('change', async () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        try {
+          if (btn) {
+            btn.disabled = true;
+            btn.textContent = '导入中...';
+          }
+          const result = await uploadDataFile(mod.importFile.endpoint, file);
+          toast(result.message || '导入成功');
+          await fetchList();
+        } catch (e) {
+          toast(e.message || '导入失败', 'error');
+        } finally {
+          if (btn) {
+            btn.disabled = false;
+            btn.textContent = mod.importFile.buttonText || '批量导入';
+          }
+          input.value = '';
+        }
+      });
     }
 
     if (mod.searchFields) {

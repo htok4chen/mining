@@ -1,0 +1,102 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>账号维护 - 矿业信息服务平台</title><link rel="stylesheet" href="/assets/style.css"></head><body>
+<script src="/assets/layout_header.js"></script>
+<div class="container">
+  <div class="uc-layout">
+    <aside class="uc-sidebar">
+      <a href="/user-center.html">🏠 个人中心</a>
+      <a href="/user-account.html?tab=profile" id="sideProfile">👤 个人信息维护</a>
+      <a href="/user-account.html?tab=password" id="sidePassword">🔒 密码修改</a>
+      <a href="/user-financing.html">📋 我的融资信息</a>
+      <a href="/user-received.html">💬 收到的洽谈</a>
+      <a href="/user-sent.html">📨 我的洽谈记录</a>
+    </aside>
+    <main class="uc-main" id="accountMain">
+      <div style="color:#8ea1b7;padding:20px 0">加载中...</div>
+    </main>
+  </div>
+</div>
+<script src="/assets/site.js"></script>
+<script>
+(function () {
+  const token = localStorage.getItem('user_token');
+  if (!token) { location.replace('/login.html?redirect=' + encodeURIComponent(location.href)); return; }
+  const authHdr = { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+  const esc = (s) => String(s == null ? '' : s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  const tab = (new URLSearchParams(location.search).get('tab') || 'profile').toLowerCase() === 'password' ? 'password' : 'profile';
+  const box = document.getElementById('accountMain');
+  const sideActive = tab === 'password' ? 'sidePassword' : 'sideProfile';
+  const activeEl = document.getElementById(sideActive);
+  if (activeEl) activeEl.classList.add('active');
+
+  async function init() {
+    try {
+      const meRes = await fetch('/api/user/profile', { headers: authHdr });
+      if (meRes.status === 401) { localStorage.removeItem('user_token'); localStorage.removeItem('user_name'); location.replace('/login.html'); return; }
+      const me = await meRes.json();
+      box.innerHTML = `
+        <h2>账号维护</h2>
+        <div class="split" style="margin-top:8px">
+          <form id="profileForm" class="section" style="margin:0">
+            <h3 style="margin:0 0 10px;color:var(--primary)">个人信息维护</h3>
+            <div class="form-row"><label>姓名</label><input class="form-input" id="pfRealName" value="${esc(me.real_name || '')}" required></div>
+            <div class="form-row"><label>职务/职称</label><input class="form-input" id="pfTitle" value="${esc(me.title_or_position || '')}" required></div>
+            <div class="form-row"><label>邮箱</label><input class="form-input" id="pfEmail" type="email" value="${esc(me.email || '')}" required></div>
+            <div class="form-row"><label>手机</label><input class="form-input" id="pfPhone" value="${esc(me.phone || '')}" required></div>
+            <div class="form-row"><label>单位</label><input class="form-input" id="pfCompany" value="${esc(me.company_name || '')}" required></div>
+            <div class="form-row"><label>业务范围</label><textarea class="form-input" id="pfScope" rows="3">${esc(me.business_scope || '')}</textarea></div>
+            <button type="submit">保存信息</button>
+          </form>
+          <form id="pwdForm" class="section" style="margin:0">
+            <h3 style="margin:0 0 10px;color:var(--primary)">密码修改</h3>
+            <div class="form-row"><label>旧密码</label><input class="form-input" id="oldPwd" type="password" required></div>
+            <div class="form-row"><label>新密码</label><input class="form-input" id="newPwd" type="password" required></div>
+            <div class="form-row"><label>确认新密码</label><input class="form-input" id="newPwd2" type="password" required></div>
+            <button type="submit">修改密码</button>
+          </form>
+        </div>`;
+
+      const profileForm = document.getElementById('profileForm');
+      const pwdForm = document.getElementById('pwdForm');
+      if (tab === 'profile') profileForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      if (tab === 'password') pwdForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+      profileForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+          real_name: document.getElementById('pfRealName').value.trim(),
+          title_or_position: document.getElementById('pfTitle').value.trim(),
+          email: document.getElementById('pfEmail').value.trim(),
+          phone: document.getElementById('pfPhone').value.trim(),
+          company_name: document.getElementById('pfCompany').value.trim(),
+          business_scope: document.getElementById('pfScope').value.trim()
+        };
+        const res = await fetch('/api/user/profile', { method:'PUT', headers: authHdr, body: JSON.stringify(payload) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return alert(data.message || '保存失败');
+        localStorage.setItem('user_name', payload.real_name || me.account_username);
+        alert(data.message || '保存成功');
+      });
+
+      pwdForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const old_password = document.getElementById('oldPwd').value;
+        const new_password = document.getElementById('newPwd').value;
+        const confirm = document.getElementById('newPwd2').value;
+        if (new_password.length < 6) return alert('新密码至少 6 位');
+        if (new_password !== confirm) return alert('两次输入的新密码不一致');
+        const res = await fetch('/api/user/password', { method:'PUT', headers: authHdr, body: JSON.stringify({ old_password, new_password }) });
+        const data = await res.json().catch(() => ({}));
+        if (!res.ok) return alert(data.message || '修改失败');
+        alert(data.message || '密码已更新');
+        e.target.reset();
+      });
+    } catch (_) {
+      box.innerHTML = '<div class="uc-empty">加载失败，请刷新重试</div>';
+    }
+  }
+
+  init();
+})();
+</script>
+<script src="/assets/layout_footer.js"></script>
+</body></html>

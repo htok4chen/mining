@@ -21,7 +21,7 @@ a{text-decoration:none;color:inherit}
 .list li{padding:10px 0;border-bottom:1px solid #edf1f7}
 .banner img{width:100%;height:300px;object-fit:cover;border-radius:6px}
 .small-banner img{width:100%;height:160px;object-fit:cover;border-radius:6px}
-.expert-list{height:240px;overflow:hidden;position:relative}
+.expert-list{height:auto;overflow:visible;position:relative}
 .expert-item{display:flex;gap:10px;align-items:center;padding:10px;border-bottom:1px dashed #e4e9f1;background:#fff}
 .expert-item img{width:62px;height:62px;border-radius:50%;object-fit:cover}
 .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}

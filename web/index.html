@@ -9,16 +9,22 @@
   <section class="section grid grid-2">
     <div>
       <div class="section-header"><h2>最新动态</h2><a href="/news.html" class="more-link">更多 ></a></div>
+      <div class="page-size-row">每页 <select id="homeNewsPageSize" onchange="siteApp.updateHomeNewsPageSize(this.value)"><option value="15" selected>15</option><option value="30">30</option><option value="50">50</option></select> 条</div>
       <ul class="list" id="homeNews"></ul>
+      <div id="homeNewsPager" class="pager-wrap"></div>
     </div>
     <div>
-      <div class="section-header"><h2>专家信息滚动展示</h2><a href="/experts.html" class="more-link">更多 ></a></div>
+      <div class="section-header"><h2>专家展示</h2><a href="/experts.html" class="more-link">更多 ></a></div>
+      <div class="page-size-row">每页 <select id="homeExpertsPageSize" onchange="siteApp.updateHomeExpertsPageSize(this.value)"><option value="15" selected>15</option><option value="30">30</option><option value="50">50</option></select> 条</div>
       <div id="homeExperts" class="expert-list"></div>
+      <div id="homeExpertsPager" class="pager-wrap"></div>
     </div>
   </section>
   <section class="section">
     <div class="section-header"><h2>矿权融资</h2><a href="/finance.html" class="more-link">更多 ></a></div>
+    <div class="page-size-row">每页 <select id="homeMiningPageSize" onchange="siteApp.updateHomeMiningPageSize(this.value)"><option value="15" selected>15</option><option value="30">30</option><option value="50">50</option></select> 条</div>
     <div id="homeMining" class="cards"></div>
+    <div id="homeMiningPager" class="pager-wrap"></div>
   </section>
   <section class="section small-banner" id="middleBanner"></section>
 </div>

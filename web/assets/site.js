@@ -20,7 +20,10 @@ const listState = {
   albums: { page: 1, pageSize: DEFAULT_PAGE_SIZE },
   news: { page: 1, pageSize: DEFAULT_PAGE_SIZE },
   experts: { page: 1, pageSize: DEFAULT_PAGE_SIZE },
-  mining: { page: 1, pageSize: DEFAULT_PAGE_SIZE }
+  mining: { page: 1, pageSize: DEFAULT_PAGE_SIZE },
+  homeNews: { page: 1, pageSize: DEFAULT_PAGE_SIZE },
+  homeExperts: { page: 1, pageSize: DEFAULT_PAGE_SIZE },
+  homeMining: { page: 1, pageSize: DEFAULT_PAGE_SIZE }
 };
 
 const clampPageSize = (v) => {
@@ -67,20 +70,14 @@ const renderCards = (el, rows, mapFn) => {
 };
 
 async function loadHome() {
-  const [bannerAdsRaw, middleAdsRaw, tileAdsRaw, newsRaw, expertsRaw, miningRaw] = await Promise.all([
+  const [bannerAdsRaw, middleAdsRaw, tileAdsRaw] = await Promise.all([
     api('/api/public/ads?position=home_banner'),
     api('/api/public/ads?position=home_middle'),
-    api('/api/public/ads?position=home_tiles'),
-    api('/api/public/news?page_size=6'),
-    api('/api/public/experts'),
-    api('/api/public/mining-financing?page_size=8')
+    api('/api/public/ads?position=home_tiles')
   ]);
   const bannerAds = Array.isArray(bannerAdsRaw) ? bannerAdsRaw : [];
   const middleAds = Array.isArray(middleAdsRaw) ? middleAdsRaw : [];
   const tileAds = Array.isArray(tileAdsRaw) ? tileAdsRaw : [];
-  const news = newsRaw && Array.isArray(newsRaw.list) ? newsRaw : { list: [] };
-  const experts = expertsRaw && Array.isArray(expertsRaw.list) ? expertsRaw.list : [];
-  const mining = miningRaw && Array.isArray(miningRaw.list) ? miningRaw : { list: [] };
 
   const banner = $('#banner');
   if (banner) {
@@ -102,25 +99,42 @@ async function loadHome() {
       `<a class="ad-tile ${i === 0 ? 'ad-tile-large' : ''}" href="${safeUrl(a.link_url)}"><img src="${esc(a.image_url)}" alt="${esc(a.title)}"></a>`
     ).join('') || '<div>暂无广告</div>';
   }
-  const newsList = $('#homeNews');
-  if (newsList) renderNewsList(newsList, news.list || []);
+  await Promise.all([loadHomeNews(1), loadHomeExperts(1), loadHomeMining(1)]);
+}
 
+async function loadHomeNews(page = 1) {
+  const state = listState.homeNews;
+  state.pageSize = readPageSize('homeNewsPageSize', state.pageSize);
+  state.page = Math.max(Number(page || state.page || 1), 1);
+  const data = await api(`/api/public/news?page=${state.page}&page_size=${state.pageSize}`);
+  const newsList = $('#homeNews');
+  if (newsList) renderNewsList(newsList, data && Array.isArray(data.list) ? data.list : []);
+  renderPager($('#homeNewsPager'), data ? data.total : 0, state.page, state.pageSize, 'loadHomeNews');
+}
+
+async function loadHomeExperts(page = 1) {
+  const state = listState.homeExperts;
+  state.pageSize = readPageSize('homeExpertsPageSize', state.pageSize);
+  state.page = Math.max(Number(page || state.page || 1), 1);
+  const data = await api(`/api/public/experts?page=${state.page}&page_size=${state.pageSize}`);
   const expertList = $('#homeExperts');
   if (expertList) {
-    expertList.innerHTML = (experts || []).map(e => `<div class="expert-item"><img src="${esc(e.avatar || 'https://picsum.photos/80')}"><div><strong>${esc(e.name)}</strong><p>${esc(e.intro || '')}</p><a href="/expert-detail.html?id=${encodeURIComponent(e.id)}" style="font-size:12px;color:var(--primary)">查看详情</a></div></div>`).join('') || '<div>暂无专家</div>';
-    let top = 0;
-    setInterval(() => {
-      if (expertList.scrollHeight > expertList.clientHeight) {
-        top = (top + 82) % expertList.scrollHeight;
-        expertList.scrollTo({ top, behavior: 'smooth' });
-      }
-    }, 2800);
+    const rows = data && Array.isArray(data.list) ? data.list : [];
+    expertList.innerHTML = rows.map(e => `<div class="expert-item"><img src="${esc(e.avatar || 'https://picsum.photos/80')}"><div><strong>${esc(e.name)}</strong><p>${esc(e.intro || '')}</p><a href="/expert-detail.html?id=${encodeURIComponent(e.id)}" style="font-size:12px;color:var(--primary)">查看详情</a></div></div>`).join('') || '<div>暂无专家</div>';
   }
+  renderPager($('#homeExpertsPager'), data ? data.total : 0, state.page, state.pageSize, 'loadHomeExperts');
+}
 
+async function loadHomeMining(page = 1) {
+  const state = listState.homeMining;
+  state.pageSize = readPageSize('homeMiningPageSize', state.pageSize);
+  state.page = Math.max(Number(page || state.page || 1), 1);
+  const data = await api(`/api/public/mining-financing?page=${state.page}&page_size=${state.pageSize}`);
   const miningList = $('#homeMining');
   if (miningList) {
-    renderCards(miningList, mining.list || [], r => `<div class="card"><div class="content"><h4>${esc(r.title)}</h4><p>${esc(r.province || '')}${esc(r.city || '')} ${esc(r.region_desc || '')}</p><p>参考价格：${esc(r.price_ref || '-')} 万元</p><small>${esc((r.publish_time||'').slice(0,10))}</small><p><a href="/finance-detail.html?id=${encodeURIComponent(r.id)}" class="detail-link">查看详情</a></p></div></div>`);
+    renderCards(miningList, data && Array.isArray(data.list) ? data.list : [], r => `<div class="card"><div class="content"><h4>${esc(r.title)}</h4><p>${esc(r.province || '')}${esc(r.city || '')} ${esc(r.region_desc || '')}</p><p>参考价格：${esc(r.price_ref || '-')} 万元</p><small>${esc((r.publish_time||'').slice(0,10))}</small><p><a href="/finance-detail.html?id=${encodeURIComponent(r.id)}" class="detail-link">查看详情</a></p></div></div>`);
   }
+  renderPager($('#homeMiningPager'), data ? data.total : 0, state.page, state.pageSize, 'loadHomeMining');
 }
 
 async function loadProducts(page = 1) {
@@ -308,9 +322,15 @@ window.siteApp = {
   loadAlbumDetail,
   loadProductDetail,
   submitInquiry,
+  loadHomeNews,
+  loadHomeExperts,
+  loadHomeMining,
   updateProductsPageSize: (v) => updatePageSize('products', v, loadProducts),
   updateAlbumsPageSize: (v) => updatePageSize('albums', v, loadAlbums),
   updateNewsPageSize: (v) => updatePageSize('news', v, loadNewsPage),
   updateExpertsPageSize: (v) => updatePageSize('experts', v, loadExperts),
-  updateMiningPageSize: (v) => updatePageSize('mining', v, loadMiningPage)
+  updateMiningPageSize: (v) => updatePageSize('mining', v, loadMiningPage),
+  updateHomeNewsPageSize: (v) => updatePageSize('homeNews', v, loadHomeNews),
+  updateHomeExpertsPageSize: (v) => updatePageSize('homeExperts', v, loadHomeExperts),
+  updateHomeMiningPageSize: (v) => updatePageSize('homeMining', v, loadHomeMining)
 };

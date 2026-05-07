@@ -39,6 +39,12 @@ a{text-decoration:none;color:inherit}
 button{border:none;background:var(--primary);color:#fff;padding:8px 14px;border-radius:4px;cursor:pointer}
 .detail-link{display:inline-block;margin-top:6px;padding:4px 10px;background:var(--primary);color:#fff;border-radius:4px;font-size:13px}
 .detail-body{margin-top:14px;line-height:1.8;white-space:pre-wrap}
+.page-size-row{display:flex;align-items:center;gap:6px;font-size:13px;color:#5a6d84;margin:0 0 10px}
+.page-size-row select{padding:4px 8px;border:1px solid #c9d6ea;border-radius:4px;background:#fff}
+.pager-wrap{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:12px;font-size:13px;color:#6b7f99}
+.pager-links{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pager-links a{padding:3px 8px;border:1px solid #d6e2f2;border-radius:4px;color:var(--primary)}
+.pager-current{padding:3px 8px;border-radius:4px;background:var(--primary);color:#fff}
 .table{width:100%;border-collapse:collapse}
 .table th,.table td{border:1px solid #e2e8f2;padding:8px;text-align:left}
 .form-row{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}

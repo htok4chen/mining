@@ -8,9 +8,11 @@
       <input id="fProvince" placeholder="省份">
       <input id="fCategory" placeholder="分类ID">
       <select id="fSort"><option value="">默认排序</option><option value="price_asc">价格升序</option><option value="price_desc">价格降序</option></select>
-      <button onclick="siteApp.loadMiningPage()">筛选</button>
+      <button onclick="siteApp.loadMiningPage(1)">筛选</button>
+      <span class="page-size-row" style="margin:0">每页 <select id="miningPageSize" onchange="siteApp.updateMiningPageSize(this.value)"><option value="15" selected>15</option><option value="30">30</option><option value="50">50</option></select> 条</span>
     </div>
     <div id="miningList" class="cards"></div>
+    <div id="miningPager" class="pager-wrap"></div>
   </section>
 </div>
 <script src="/assets/site.js"></script><script>siteApp.loadMiningPage();</script>

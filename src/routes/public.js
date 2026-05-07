@@ -8,7 +8,7 @@ const router = express.Router();
 
 const buildListResult = async (baseSql, countFromSql, whereSql, params, page, pageSize, orderSql = ' ORDER BY id DESC') => {
   const p = Math.max(Number(page || 1), 1);
-  const s = Math.min(Math.max(Number(pageSize || 10), 1), 100);
+  const s = Math.min(Math.max(Number(pageSize || 15), 1), 100);
   const sql = `${baseSql} ${whereSql}${orderSql} LIMIT ?, ?`;
   const countSql = `SELECT COUNT(*) AS total ${countFromSql} ${whereSql}`;
   const [list] = await db.query(sql, [...params, (p - 1) * s, s]);
@@ -88,8 +88,16 @@ router.get('/experts/:id', async (req, res, next) => {
 
 router.get('/experts', async (req, res, next) => {
   try {
-    const [rows] = await db.query('SELECT * FROM expert WHERE status = 1 ORDER BY sort ASC, id DESC');
-    res.json(rows);
+    const data = await buildListResult(
+      'SELECT * FROM expert',
+      'FROM expert',
+      'WHERE status = 1',
+      [],
+      req.query.page,
+      req.query.page_size,
+      ' ORDER BY sort ASC, id DESC'
+    );
+    res.json(data);
   } catch (e) { next(e); }
 });
 
@@ -144,8 +152,16 @@ router.get('/albums/:id', async (req, res, next) => {
 
 router.get('/albums', async (req, res, next) => {
   try {
-    const [rows] = await db.query('SELECT * FROM album WHERE status = 1 ORDER BY sort ASC, id DESC');
-    res.json(rows);
+    const data = await buildListResult(
+      'SELECT * FROM album',
+      'FROM album',
+      'WHERE status = 1',
+      [],
+      req.query.page,
+      req.query.page_size,
+      ' ORDER BY sort ASC, id DESC'
+    );
+    res.json(data);
   } catch (e) { next(e); }
 });
 
@@ -159,8 +175,16 @@ router.get('/products/:id', async (req, res, next) => {
 
 router.get('/products', async (req, res, next) => {
   try {
-    const [rows] = await db.query('SELECT * FROM product WHERE status = 1 ORDER BY sort ASC, id DESC');
-    res.json(rows);
+    const data = await buildListResult(
+      'SELECT * FROM product',
+      'FROM product',
+      'WHERE status = 1',
+      [],
+      req.query.page,
+      req.query.page_size,
+      ' ORDER BY sort ASC, id DESC'
+    );
+    res.json(data);
   } catch (e) { next(e); }
 });
 

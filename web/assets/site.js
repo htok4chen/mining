@@ -14,6 +14,50 @@ const api = async (url, options) => {
   return data;
 };
 
+const DEFAULT_PAGE_SIZE = 15;
+const listState = {
+  products: { page: 1, pageSize: DEFAULT_PAGE_SIZE },
+  albums: { page: 1, pageSize: DEFAULT_PAGE_SIZE },
+  news: { page: 1, pageSize: DEFAULT_PAGE_SIZE },
+  experts: { page: 1, pageSize: DEFAULT_PAGE_SIZE },
+  mining: { page: 1, pageSize: DEFAULT_PAGE_SIZE }
+};
+
+const clampPageSize = (v) => {
+  const n = Number(v);
+  if (!Number.isFinite(n) || n < 1) return DEFAULT_PAGE_SIZE;
+  return Math.min(Math.max(Math.floor(n), 1), 100);
+};
+
+const readPageSize = (selectId, fallback = DEFAULT_PAGE_SIZE) => {
+  const el = document.getElementById(selectId);
+  return el ? clampPageSize(el.value) : fallback;
+};
+
+const renderPager = (el, total, page, pageSize, fnName) => {
+  if (!el) return;
+  const totalCount = Number(total || 0);
+  const totalPages = Math.max(Math.ceil(totalCount / pageSize), 1);
+  const safePage = Math.min(Math.max(page, 1), totalPages);
+  const prev = safePage > 1 ? `<a href="#" onclick="siteApp.${fnName}(${safePage - 1});return false">上一页</a>` : '';
+  const next = safePage < totalPages ? `<a href="#" onclick="siteApp.${fnName}(${safePage + 1});return false">下一页</a>` : '';
+  const pages = [];
+  const start = Math.max(1, safePage - 2);
+  const end = Math.min(totalPages, safePage + 2);
+  for (let i = start; i <= end; i += 1) {
+    pages.push(i === safePage
+      ? `<span class="pager-current">${i}</span>`
+      : `<a href="#" onclick="siteApp.${fnName}(${i});return false">${i}</a>`);
+  }
+  el.innerHTML = `<div class="pager-meta">共 ${totalCount} 条</div><div class="pager-links">${prev}${pages.join('')}${next}</div>`;
+};
+
+const updatePageSize = (key, value, loadFn) => {
+  listState[key].pageSize = clampPageSize(value);
+  listState[key].page = 1;
+  loadFn(1);
+};
+
 const renderNewsList = (el, rows) => {
   el.innerHTML = rows.map(n => `<li><a href="/news-detail.html?id=${encodeURIComponent(n.id)}">${esc(n.title)}</a><span style="float:right;color:#8ea1b7">${esc((n.publish_time||'').slice(0,10))}</span></li>`).join('') || '<li>暂无新闻</li>';
 };
@@ -35,7 +79,7 @@ async function loadHome() {
   const middleAds = Array.isArray(middleAdsRaw) ? middleAdsRaw : [];
   const tileAds = Array.isArray(tileAdsRaw) ? tileAdsRaw : [];
   const news = newsRaw && Array.isArray(newsRaw.list) ? newsRaw : { list: [] };
-  const experts = Array.isArray(expertsRaw) ? expertsRaw : [];
+  const experts = expertsRaw && Array.isArray(expertsRaw.list) ? expertsRaw.list : [];
   const mining = miningRaw && Array.isArray(miningRaw.list) ? miningRaw : { list: [] };
 
   const banner = $('#banner');
@@ -79,30 +123,45 @@ async function loadHome() {
   }
 }
 
-async function loadProducts() {
-  const data = await api('/api/public/products');
+async function loadProducts(page = 1) {
+  const state = listState.products;
+  state.pageSize = readPageSize('productsPageSize', state.pageSize);
+  state.page = Math.max(Number(page || state.page || 1), 1);
+  const data = await api(`/api/public/products?page=${state.page}&page_size=${state.pageSize}`);
   const box = $('#products');
-  if (box) renderCards(box, Array.isArray(data) ? data : [], p => `<div class="card"><img src="${esc(p.cover_image || 'https://picsum.photos/300/160')}"><div class="content"><h4>${esc(p.name)}</h4><p>${esc(p.description || '')}</p><p><a href="/product-detail.html?id=${encodeURIComponent(p.id)}" class="detail-link">查看详情</a></p></div></div>`);
+  if (box) renderCards(box, data && Array.isArray(data.list) ? data.list : [], p => `<div class="card"><img src="${esc(p.cover_image || 'https://picsum.photos/300/160')}"><div class="content"><h4>${esc(p.name)}</h4><p>${esc(p.description || '')}</p><p><a href="/product-detail.html?id=${encodeURIComponent(p.id)}" class="detail-link">查看详情</a></p></div></div>`);
+  renderPager($('#productsPager'), data ? data.total : 0, state.page, state.pageSize, 'loadProducts');
 }
 
-async function loadAlbums() {
-  const data = await api('/api/public/albums');
+async function loadAlbums(page = 1) {
+  const state = listState.albums;
+  state.pageSize = readPageSize('albumsPageSize', state.pageSize);
+  state.page = Math.max(Number(page || state.page || 1), 1);
+  const data = await api(`/api/public/albums?page=${state.page}&page_size=${state.pageSize}`);
   const box = $('#albums');
-  if (box) renderCards(box, Array.isArray(data) ? data : [], p => `<div class="card"><img src="${esc(p.image_url)}"><div class="content"><h4>${esc(p.title)}</h4><p>${esc(p.description || '')}</p><p><a href="/album-detail.html?id=${encodeURIComponent(p.id)}" class="detail-link">查看详情</a></p></div></div>`);
+  if (box) renderCards(box, data && Array.isArray(data.list) ? data.list : [], p => `<div class="card"><img src="${esc(p.image_url)}"><div class="content"><h4>${esc(p.title)}</h4><p>${esc(p.description || '')}</p><p><a href="/album-detail.html?id=${encodeURIComponent(p.id)}" class="detail-link">查看详情</a></p></div></div>`);
+  renderPager($('#albumsPager'), data ? data.total : 0, state.page, state.pageSize, 'loadAlbums');
 }
 
-async function loadNewsPage() {
-  const data = await api('/api/public/news?page_size=30');
+async function loadNewsPage(page = 1) {
+  const state = listState.news;
+  state.pageSize = readPageSize('newsPageSize', state.pageSize);
+  state.page = Math.max(Number(page || state.page || 1), 1);
+  const data = await api(`/api/public/news?page=${state.page}&page_size=${state.pageSize}`);
   const list = $('#newsList');
   if (list) renderNewsList(list, data && Array.isArray(data.list) ? data.list : []);
+  renderPager($('#newsPager'), data ? data.total : 0, state.page, state.pageSize, 'loadNewsPage');
 }
 
-async function loadMiningPage() {
+async function loadMiningPage(page = 1) {
+  const state = listState.mining;
+  state.pageSize = readPageSize('miningPageSize', state.pageSize);
+  state.page = Math.max(Number(page || state.page || 1), 1);
   const category = $('#fCategory').value;
   const province = $('#fProvince').value;
   const keyword = $('#fKeyword').value;
   const sort = $('#fSort').value;
-  const query = new URLSearchParams({ page_size: 20 });
+  const query = new URLSearchParams({ page: state.page, page_size: state.pageSize });
   if (category) query.set('category_id', category);
   if (province) query.set('province', province);
   if (keyword) query.set('keyword', keyword);
@@ -110,12 +169,17 @@ async function loadMiningPage() {
   const data = await api('/api/public/mining-financing?' + query.toString());
   const list = $('#miningList');
   if (list) renderCards(list, data && Array.isArray(data.list) ? data.list : [], r => `<div class="card"><div class="content"><h4>${esc(r.title)}</h4><p>${esc(r.category_name || '')} | ${esc(r.province || '')}${esc(r.city || '')}</p><p>${esc(r.summary || '')}</p><p>参考价格：${esc(r.price_ref || '-')} 万元</p><small>${esc((r.publish_time||'').slice(0,10))}</small><p><a href="/finance-detail.html?id=${encodeURIComponent(r.id)}" class="detail-link">查看详情</a></p></div></div>`);
+  renderPager($('#miningPager'), data ? data.total : 0, state.page, state.pageSize, 'loadMiningPage');
 }
 
-async function loadExperts() {
-  const data = await api('/api/public/experts');
+async function loadExperts(page = 1) {
+  const state = listState.experts;
+  state.pageSize = readPageSize('expertsPageSize', state.pageSize);
+  state.page = Math.max(Number(page || state.page || 1), 1);
+  const data = await api(`/api/public/experts?page=${state.page}&page_size=${state.pageSize}`);
   const box = $('#expertsList');
-  if (box) renderCards(box, Array.isArray(data) ? data : [], e => `<div class="card"><div class="content" style="display:flex;gap:10px;align-items:flex-start"><img src="${esc(e.avatar || 'https://picsum.photos/80')}" alt="${esc(e.name)}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;flex-shrink:0"><div><h4 style="margin:0 0 4px">${esc(e.name)}</h4><p style="margin:0 0 4px;font-size:13px;color:#8ea1b7">${esc(e.title || '')}</p><p style="margin:0 0 6px;font-size:12px">${esc(e.intro || '')}</p><a href="/expert-detail.html?id=${encodeURIComponent(e.id)}" class="detail-link">查看详情</a></div></div></div>`);
+  if (box) renderCards(box, data && Array.isArray(data.list) ? data.list : [], e => `<div class="card"><div class="content" style="display:flex;gap:10px;align-items:flex-start"><img src="${esc(e.avatar || 'https://picsum.photos/80')}" alt="${esc(e.name)}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;flex-shrink:0"><div><h4 style="margin:0 0 4px">${esc(e.name)}</h4><p style="margin:0 0 4px;font-size:13px;color:#8ea1b7">${esc(e.title || '')}</p><p style="margin:0 0 6px;font-size:12px">${esc(e.intro || '')}</p><a href="/expert-detail.html?id=${encodeURIComponent(e.id)}" class="detail-link">查看详情</a></div></div></div>`);
+  renderPager($('#expertsPager'), data ? data.total : 0, state.page, state.pageSize, 'loadExperts');
 }
 
 async function submitMessage(e) {
@@ -160,7 +224,7 @@ async function loadExpertDetail() {
   if (!id) { box.innerHTML = '<p>参数错误</p>'; return; }
   const data = await api(`/api/public/experts/${encodeURIComponent(id)}`);
   if (!data) { box.innerHTML = '<p>专家不存在</p>'; return; }
-  box.innerHTML = `<div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap"><img src="${esc(data.avatar || 'https://picsum.photos/120')}" alt="${esc(data.name)}" style="width:120px;height:120px;border-radius:50%;object-fit:cover"><div><h1 style="margin:0 0 8px">${esc(data.name)}</h1><p>${esc(data.title || '')}</p><p>${esc(data.intro || '')}</p>${data.card_image ? `<p style="margin-top:10px"><a class="detail-link" href="${esc(data.card_image)}" target="_blank" rel="noopener">查看专家名片</a></p>` : ''}</div></div>`;
+  box.innerHTML = `<div style="display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap"><img src="${esc(data.avatar || 'https://picsum.photos/120')}" alt="${esc(data.name)}" style="width:120px;height:120px;border-radius:50%;object-fit:cover"><div style="flex:1;min-width:260px"><h1 style="margin:0 0 8px">${esc(data.name)}</h1><p style="margin:0 0 8px;color:#5a6d84">${esc(data.title || '')}</p><p style="margin:0 0 10px">${esc(data.intro || '')}</p>${data.card_image ? `<p style="margin:0 0 10px"><a class="detail-link" href="${esc(data.card_image)}" target="_blank" rel="noopener">查看专家名片</a></p>` : ''}<h3 style="margin:8px 0;color:var(--primary)">详细履历</h3><div class="detail-body">${esc(data.resume || data.intro || '暂无详细履历')}</div></div></div>`;
 }
 
 async function loadFinanceDetail() {
@@ -229,4 +293,24 @@ async function submitInquiry(e) {
   if (res) { $('#iqContent').value = ''; }
 }
 
-window.siteApp = { loadHome, loadProducts, loadAlbums, loadNewsPage, loadMiningPage, loadExperts, submitMessage, loadNewsDetail, loadAdDetail, loadExpertDetail, loadFinanceDetail, loadAlbumDetail, loadProductDetail, submitInquiry };
+window.siteApp = {
+  loadHome,
+  loadProducts,
+  loadAlbums,
+  loadNewsPage,
+  loadMiningPage,
+  loadExperts,
+  submitMessage,
+  loadNewsDetail,
+  loadAdDetail,
+  loadExpertDetail,
+  loadFinanceDetail,
+  loadAlbumDetail,
+  loadProductDetail,
+  submitInquiry,
+  updateProductsPageSize: (v) => updatePageSize('products', v, loadProducts),
+  updateAlbumsPageSize: (v) => updatePageSize('albums', v, loadAlbums),
+  updateNewsPageSize: (v) => updatePageSize('news', v, loadNewsPage),
+  updateExpertsPageSize: (v) => updatePageSize('experts', v, loadExperts),
+  updateMiningPageSize: (v) => updatePageSize('mining', v, loadMiningPage)
+};

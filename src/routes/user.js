@@ -213,8 +213,12 @@ router.get('/my-financing/:id/inquiries', async (req, res, next) => {
          WHERE id IN (${quoteIdList(unreadIds)}) AND owner_read_at IS NULL`,
         unreadIds
       );
-      const readAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
-      list.forEach((row) => { if (!row.owner_read_at) row.owner_read_at = readAt; });
+      const [readRows] = await db.query(
+        `SELECT id, owner_read_at FROM mining_inquiry WHERE id IN (${quoteIdList(unreadIds)})`,
+        unreadIds
+      );
+      const readMap = new Map(readRows.map((r) => [Number(r.id), r.owner_read_at]));
+      list.forEach((row) => { if (!row.owner_read_at) row.owner_read_at = readMap.get(Number(row.id)) || row.owner_read_at; });
     }
     const [[{ total }]] = await db.query(
       'SELECT COUNT(*) AS total FROM mining_inquiry WHERE financing_id = ?',
@@ -245,8 +249,12 @@ router.get('/received-inquiries', async (req, res, next) => {
          WHERE id IN (${quoteIdList(unreadIds)}) AND owner_read_at IS NULL`,
         unreadIds
       );
-      const readAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
-      list.forEach((row) => { if (!row.owner_read_at) row.owner_read_at = readAt; });
+      const [readRows] = await db.query(
+        `SELECT id, owner_read_at FROM mining_inquiry WHERE id IN (${quoteIdList(unreadIds)})`,
+        unreadIds
+      );
+      const readMap = new Map(readRows.map((r) => [Number(r.id), r.owner_read_at]));
+      list.forEach((row) => { if (!row.owner_read_at) row.owner_read_at = readMap.get(Number(row.id)) || row.owner_read_at; });
     }
     const [[{ total }]] = await db.query(
       `SELECT COUNT(*) AS total
@@ -310,8 +318,12 @@ router.get('/my-inquiries', async (req, res, next) => {
          WHERE id IN (${quoteIdList(unreadReplyIds)}) AND sender_read_at IS NULL`,
         unreadReplyIds
       );
-      const readAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
-      list.forEach((row) => { if (row.reply && !row.sender_read_at) row.sender_read_at = readAt; });
+      const [readRows] = await db.query(
+        `SELECT id, sender_read_at FROM mining_inquiry WHERE id IN (${quoteIdList(unreadReplyIds)})`,
+        unreadReplyIds
+      );
+      const readMap = new Map(readRows.map((r) => [Number(r.id), r.sender_read_at]));
+      list.forEach((row) => { if (row.reply && !row.sender_read_at) row.sender_read_at = readMap.get(Number(row.id)) || row.sender_read_at; });
     }
     const [[{ total }]] = await db.query(
       'SELECT COUNT(*) AS total FROM mining_inquiry WHERE user_id = ?',

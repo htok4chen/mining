@@ -182,6 +182,12 @@ router.post('/mining-inquiries', async (req, res, next) => {
   try {
     const { financing_id, name, phone, content } = req.body;
     if (!financing_id) return res.status(400).json({ message: '项目必填' });
+    const [posts] = await db.query(
+      'SELECT id, user_id, status FROM mining_financing WHERE id = ? LIMIT 1',
+      [financing_id]
+    );
+    const post = posts[0];
+    if (!post || post.status !== 1) return res.status(404).json({ message: '融资项目不存在或已下线' });
 
     let finalName = name;
     let finalPhone = phone;
@@ -192,6 +198,9 @@ router.post('/mining-inquiries', async (req, res, next) => {
         const payload = jwt.verify(rawToken, jwtSecret);
         if (payload.role === 'user') {
           userId = payload.id;
+          if (post.user_id && Number(post.user_id) === Number(userId)) {
+            return res.status(400).json({ message: '不能给自己发布的融资信息留言' });
+          }
           if (!finalName || !finalPhone) {
             const [users] = await db.query('SELECT real_name, phone, status FROM end_user WHERE id = ? LIMIT 1', [userId]);
             const user = users[0];

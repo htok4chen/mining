@@ -110,6 +110,8 @@ CREATE TABLE IF NOT EXISTS mining_inquiry (
   content VARCHAR(500) NULL,
   reply VARCHAR(500) NULL,
   status TINYINT NOT NULL DEFAULT 0,
+  owner_read_at DATETIME NULL,
+  sender_read_at DATETIME NULL,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   KEY idx_inquiry_financing (financing_id),
@@ -303,3 +305,17 @@ SET @sql3 = IF(@col_exists3 = 0,
   'ALTER TABLE expert ADD COLUMN card_image VARCHAR(255) NULL AFTER avatar',
   'SELECT 1');
 PREPARE stmt3 FROM @sql3; EXECUTE stmt3; DEALLOCATE PREPARE stmt3;
+
+SET @col_exists4 = (SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'mining_inquiry' AND COLUMN_NAME = 'owner_read_at');
+SET @sql4 = IF(@col_exists4 = 0,
+  'ALTER TABLE mining_inquiry ADD COLUMN owner_read_at DATETIME NULL AFTER status',
+  'SELECT 1');
+PREPARE stmt4 FROM @sql4; EXECUTE stmt4; DEALLOCATE PREPARE stmt4;
+
+SET @col_exists5 = (SELECT COUNT(*) FROM information_schema.COLUMNS
+  WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'mining_inquiry' AND COLUMN_NAME = 'sender_read_at');
+SET @sql5 = IF(@col_exists5 = 0,
+  'ALTER TABLE mining_inquiry ADD COLUMN sender_read_at DATETIME NULL AFTER owner_read_at',
+  'SELECT 1');
+PREPARE stmt5 FROM @sql5; EXECUTE stmt5; DEALLOCATE PREPARE stmt5;

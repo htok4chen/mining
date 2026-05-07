@@ -7,6 +7,8 @@ const userAuth = require('../middleware/userAuth');
 const router = express.Router();
 router.use(userAuth);
 
+const quoteIdList = (ids) => ids.map(() => '?').join(',');
+
 router.get('/profile', async (req, res, next) => {
   try {
     const [rows] = await db.query(
@@ -204,6 +206,16 @@ router.get('/my-financing/:id/inquiries', async (req, res, next) => {
        LIMIT ?, ?`,
       [req.params.id, (page - 1) * pageSize, pageSize]
     );
+    const unreadIds = list.filter((r) => !r.owner_read_at).map((r) => r.id);
+    if (unreadIds.length) {
+      await db.query(
+        `UPDATE mining_inquiry SET owner_read_at = NOW(), updated_at = NOW()
+         WHERE id IN (${quoteIdList(unreadIds)}) AND owner_read_at IS NULL`,
+        unreadIds
+      );
+      const readAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      list.forEach((row) => { if (!row.owner_read_at) row.owner_read_at = readAt; });
+    }
     const [[{ total }]] = await db.query(
       'SELECT COUNT(*) AS total FROM mining_inquiry WHERE financing_id = ?',
       [req.params.id]
@@ -226,6 +238,16 @@ router.get('/received-inquiries', async (req, res, next) => {
        LIMIT ?, ?`,
       [req.user.id, (page - 1) * pageSize, pageSize]
     );
+    const unreadIds = list.filter((r) => !r.owner_read_at).map((r) => r.id);
+    if (unreadIds.length) {
+      await db.query(
+        `UPDATE mining_inquiry SET owner_read_at = NOW(), updated_at = NOW()
+         WHERE id IN (${quoteIdList(unreadIds)}) AND owner_read_at IS NULL`,
+        unreadIds
+      );
+      const readAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      list.forEach((row) => { if (!row.owner_read_at) row.owner_read_at = readAt; });
+    }
     const [[{ total }]] = await db.query(
       `SELECT COUNT(*) AS total
        FROM mining_inquiry i
@@ -234,6 +256,34 @@ router.get('/received-inquiries', async (req, res, next) => {
       [req.user.id]
     );
     res.json({ list, total, page, pageSize });
+  } catch (e) { next(e); }
+});
+
+// PUT /api/user/received-inquiries/:id/reply
+router.put('/received-inquiries/:id/reply', async (req, res, next) => {
+  try {
+    const reply = String(req.body.reply || '').trim();
+    if (!reply) return res.status(400).json({ message: '回复内容不能为空' });
+    const hit = await ensureNoForbiddenWords([reply]);
+    if (hit) return res.status(400).json({ message: '内容违规，请修改后提交' });
+
+    const [rows] = await db.query(
+      `SELECT i.id
+       FROM mining_inquiry i
+       JOIN mining_financing mf ON mf.id = i.financing_id
+       WHERE i.id = ? AND mf.user_id = ?
+       LIMIT 1`,
+      [req.params.id, req.user.id]
+    );
+    if (!rows.length) return res.status(404).json({ message: '洽谈记录不存在或无权限' });
+
+    await db.query(
+      `UPDATE mining_inquiry
+       SET reply = ?, status = 1, owner_read_at = IFNULL(owner_read_at, NOW()), sender_read_at = NULL, updated_at = NOW()
+       WHERE id = ?`,
+      [reply, req.params.id]
+    );
+    res.json({ message: '回复成功' });
   } catch (e) { next(e); }
 });
 
@@ -253,6 +303,16 @@ router.get('/my-inquiries', async (req, res, next) => {
        LIMIT ?, ?`,
       [req.user.id, (page - 1) * pageSize, pageSize]
     );
+    const unreadReplyIds = list.filter((r) => r.reply && !r.sender_read_at).map((r) => r.id);
+    if (unreadReplyIds.length) {
+      await db.query(
+        `UPDATE mining_inquiry SET sender_read_at = NOW(), updated_at = NOW()
+         WHERE id IN (${quoteIdList(unreadReplyIds)}) AND sender_read_at IS NULL`,
+        unreadReplyIds
+      );
+      const readAt = new Date().toISOString().slice(0, 19).replace('T', ' ');
+      list.forEach((row) => { if (row.reply && !row.sender_read_at) row.sender_read_at = readAt; });
+    }
     const [[{ total }]] = await db.query(
       'SELECT COUNT(*) AS total FROM mining_inquiry WHERE user_id = ?',
       [req.user.id]

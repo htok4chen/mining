@@ -10,6 +10,7 @@
   --admin-header-bg: #ffffff;
   --admin-text: #2d3142;
   --admin-border: #e0e0e0;
+  --admin-text-light: #666666;
 }
 
 /* 登录页 */
@@ -42,7 +43,7 @@
 }
 
 .adm-login-logo p {
-  color: var(--admin-text-light, #666);
+  color: var(--admin-text-light);
   font-size: 14px;
 }
 
@@ -70,6 +71,10 @@
   outline: none;
   border-color: var(--admin-primary);
   box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+}
+
+.adm-input.invalid {
+  border-color: #dc3545;
 }
 
 .btn-login {
@@ -100,7 +105,7 @@
 .adm-layout {
   display: flex;
   height: 100vh;
-  background-color: var(--admin-bg, #f5f5f5);
+  background-color: #f5f5f5;
 }
 
 .adm-sidebar {
@@ -148,10 +153,6 @@
 .adm-nav-group-hdr:hover {
   background-color: rgba(230, 57, 70, 0.2);
   color: white;
-}
-
-.adm-caret {
-  font-size: 12px;
 }
 
 .adm-nav-items {
@@ -323,6 +324,7 @@
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 .btn-default {
@@ -413,7 +415,7 @@
   background: none;
   border: none;
   font-size: 24px;
-  color: var(--admin-text-light, #666);
+  color: var(--admin-text-light);
   cursor: pointer;
   transition: color 0.3s ease;
 }
@@ -432,6 +434,42 @@
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+}
+
+.adm-view-detail {
+  display: grid;
+  gap: 16px;
+}
+
+.adm-view-row {
+  display: grid;
+  grid-template-columns: 150px 1fr;
+  gap: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.adm-view-row:last-child {
+  border-bottom: none;
+}
+
+.adm-view-label {
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.adm-view-val {
+  color: var(--admin-text-light);
+}
+
+.adm-reply-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid var(--admin-border);
+}
+
+.adm-reply-section h4 {
+  margin-bottom: 16px;
 }
 
 /* 吐司 */
@@ -471,12 +509,28 @@
 .adm-empty {
   text-align: center;
   padding: 40px 20px;
-  color: var(--admin-text-light, #666);
+  color: var(--admin-text-light);
 }
 
 .adm-empty-icon {
   font-size: 48px;
   margin-bottom: 16px;
+}
+
+.adm-error-box {
+  padding: 16px;
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.adm-loading {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--admin-text-light);
 }
 
 /* 分页 */
@@ -486,11 +540,13 @@
   align-items: center;
   gap: 8px;
   padding: 20px;
+  flex-wrap: wrap;
 }
 
 .adm-pag-info {
-  color: var(--admin-text-light, #666);
+  color: var(--admin-text-light);
   font-size: 14px;
+  margin-right: 16px;
 }
 
 .adm-pag-btn {
@@ -515,6 +571,10 @@
   border-color: var(--admin-primary);
 }
 
+.adm-pag-ellipsis {
+  color: var(--admin-text-light);
+}
+
 /* 响应式 */
 @media (max-width: 768px) {
   .adm-layout {
@@ -524,6 +584,7 @@
   .adm-sidebar {
     width: 100%;
     height: auto;
+    max-height: 50vh;
   }
 
   .adm-main {
@@ -550,5 +611,13 @@
 
   .adm-actions {
     flex-direction: column;
+  }
+
+  .adm-modal {
+    max-height: 90vh;
+  }
+
+  .adm-view-row {
+    grid-template-columns: 1fr;
   }
 }

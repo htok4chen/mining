@@ -1,0 +1,462 @@
+/* ================================================================
+   全局样式 - 矿业信息服务平台
+   配色方案：红色(#e63946) 白色(#ffffff) 黄色(#f4d35e) 浅粉色(#fcd5ce)
+   ================================================================ */
+
+:root {
+  --color-primary: #e63946;
+  --color-secondary: #f4d35e;
+  --color-accent: #fcd5ce;
+  --color-white: #ffffff;
+  --color-dark: #2d3142;
+  --color-light: #f5f5f5;
+  --color-border: #e0e0e0;
+  --color-text: #333333;
+  --color-text-light: #666666;
+  --color-success: #22a447;
+  --color-warning: #ff9800;
+  --color-danger: #e63946;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', 'Microsoft YaHei', sans-serif;
+  color: var(--color-text);
+  background-color: var(--color-light);
+  line-height: 1.6;
+}
+
+/* 容器 */
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* 栏目板�� */
+.section {
+  background-color: var(--color-white);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 3px solid var(--color-primary);
+}
+
+.section-header h2 {
+  font-size: 24px;
+  color: var(--color-dark);
+  margin: 0;
+}
+
+.section-header h2::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 24px;
+  background-color: var(--color-primary);
+  margin-right: 10px;
+  border-radius: 2px;
+}
+
+.more-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.more-link:hover {
+  color: #d42d3d;
+}
+
+/* 网格布局 */
+.grid {
+  display: grid;
+  gap: 20px;
+}
+
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.grid-4 { grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); }
+
+@media (max-width: 1024px) {
+  .grid-4 { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+}
+
+@media (max-width: 768px) {
+  .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+  .container { padding: 0 15px; }
+}
+
+/* 卡片 */
+.card {
+  background-color: var(--color-white);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+  transform: translateY(-4px);
+}
+
+.card-header {
+  padding: 16px;
+  background: linear-gradient(135deg, var(--color-primary), #d42d3d);
+  color: white;
+  border-bottom: 2px solid var(--color-secondary);
+}
+
+.card-body {
+  padding: 16px;
+}
+
+.card-footer {
+  padding: 12px 16px;
+  background-color: var(--color-light);
+  border-top: 1px solid var(--color-border);
+}
+
+/* 按钮 */
+.btn {
+  display: inline-block;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  text-align: center;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.btn-primary:hover {
+  background-color: #d42d3d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
+}
+
+.btn-secondary {
+  background-color: var(--color-secondary);
+  color: var(--color-dark);
+}
+
+.btn-secondary:hover {
+  background-color: #f0c945;
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 2px solid var(--color-primary);
+}
+
+.btn-outline:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* 标题 */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-dark);
+  line-height: 1.4;
+}
+
+h1 { font-size: 32px; }
+h2 { font-size: 24px; }
+h3 { font-size: 20px; }
+
+/* 列表 */
+.list {
+  list-style: none;
+}
+
+.list li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+  transition: all 0.3s ease;
+}
+
+.list li:hover {
+  padding-left: 8px;
+  color: var(--color-primary);
+}
+
+.list li:last-child {
+  border-bottom: none;
+}
+
+.list a {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.list a:hover {
+  color: var(--color-primary);
+}
+
+/* 横幅 */
+.banner {
+  height: 300px;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 32px;
+  font-weight: bold;
+  margin-bottom: 24px;
+}
+
+.banner.small {
+  height: 200px;
+  font-size: 24px;
+}
+
+/* 右侧边栏 - 在线联系 */
+.sidebar-right {
+  position: fixed;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.contact-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  color: white;
+  text-decoration: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s ease;
+}
+
+.contact-wechat {
+  background-color: #09b83e;
+}
+
+.contact-wechat:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(9, 184, 62, 0.3);
+}
+
+.contact-qq {
+  background-color: #1296db;
+}
+
+.contact-qq:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(18, 150, 219, 0.3);
+}
+
+.contact-phone {
+  background-color: var(--color-primary);
+}
+
+.contact-phone:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(230, 57, 70, 0.3);
+}
+
+.contact-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  display: none;
+  z-index: 1000;
+}
+
+.contact-modal.show {
+  display: block;
+}
+
+.contact-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--color-text-light);
+}
+
+.contact-modal img {
+  max-width: 250px;
+  margin: 12px auto;
+}
+
+.contact-modal-phone {
+  text-align: center;
+  font-size: 24px;
+  color: var(--color-primary);
+  font-weight: bold;
+  margin: 16px 0;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  z-index: 999;
+}
+
+.overlay.show {
+  display: block;
+}
+
+/* 页面尺寸行 */
+.page-size-row {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.page-size-row select {
+  padding: 6px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* 分页 */
+.pager-wrap {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.pager-btn {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  background-color: white;
+  color: var(--color-primary);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.pager-btn:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.pager-btn.active {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+/* 底部页脚 */
+footer {
+  background-color: var(--color-dark);
+  color: white;
+  padding: 40px 0 20px;
+  margin-top: 40px;
+}
+
+footer a {
+  color: var(--color-secondary);
+  text-decoration: none;
+}
+
+footer a:hover {
+  text-decoration: underline;
+}
+
+.footer-section {
+  margin-bottom: 20px;
+}
+
+.footer-section h4 {
+  color: var(--color-secondary);
+  margin-bottom: 12px;
+  font-size: 16px;
+}
+
+.footer-links {
+  list-style: none;
+}
+
+.footer-links li {
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 20px;
+  padding-top: 20px;
+  text-align: center;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .sidebar-right {
+    position: static;
+    transform: none;
+    flex-direction: row;
+    justify-content: center;
+    margin: 20px 0;
+  }
+
+  .section {
+    padding: 16px;
+  }
+
+  .section-header h2 {
+    font-size: 20px;
+  }
+
+  .banner {
+    height: 200px;
+    font-size: 24px;
+  }
+}

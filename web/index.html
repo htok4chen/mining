@@ -1,33 +1,150 @@
-<!doctype html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>首页-矿业信息服务平台</title><link rel="stylesheet" href="/assets/style.css"></head><body>
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>矿业信息服务平台 - 专业矿权交易、融资、行情服务</title>
+  <link rel="stylesheet" href="/assets/css/site-theme.css">
+  <style>
+    .featured-blocks { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 16px; margin: 20px 0; }
+    .featured-block { background: linear-gradient(135deg, #e63946, #d42d3d); color: white; padding: 20px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.3s; }
+    .featured-block:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(230, 57, 70, 0.3); }
+    .featured-block-icon { font-size: 32px; margin-bottom: 8px; }
+    .featured-block-text { font-size: 14px; font-weight: 600; }
+  </style>
+</head>
+<body>
+
 <script src="/assets/layout_header.js"></script>
+
 <div class="container">
+  <!-- 轮播图 -->
   <section class="section banner" id="banner"></section>
+
+  <!-- 功能导航块 -->
+  <section class="section">
+    <div class="featured-blocks">
+      <div class="featured-block" onclick="siteApp.navigate('/mining-trade.html')">
+        <div class="featured-block-icon">⛏️</div>
+        <div class="featured-block-text">矿权交易</div>
+      </div>
+      <div class="featured-block" onclick="siteApp.navigate('/supply-demand.html')">
+        <div class="featured-block-icon">📊</div>
+        <div class="featured-block-text">供求商机</div>
+      </div>
+      <div class="featured-block" onclick="siteApp.navigate('/experts.html')">
+        <div class="featured-block-icon">👤</div>
+        <div class="featured-block-text">专家板块</div>
+      </div>
+      <div class="featured-block" onclick="siteApp.navigate('/market.html')">
+        <div class="featured-block-icon">📈</div>
+        <div class="featured-block-text">市场行情</div>
+      </div>
+      <div class="featured-block" onclick="siteApp.navigate('/news.html')">
+        <div class="featured-block-icon">📰</div>
+        <div class="featured-block-text">行业咨询</div>
+      </div>
+      <div class="featured-block" onclick="siteApp.navigate('/academy.html')">
+        <div class="featured-block-icon">🎓</div>
+        <div class="featured-block-text">矿业学堂</div>
+      </div>
+      <div class="featured-block" onclick="siteApp.navigate('/finance.html')">
+        <div class="featured-block-icon">💰</div>
+        <div class="featured-block-text">矿权融资</div>
+      </div>
+      <div class="featured-block" onclick="siteApp.navigate('/vip.html')">
+        <div class="featured-block-icon">👑</div>
+        <div class="featured-block-text">VIP会员</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 推荐广告位 -->
   <section class="section">
     <div class="section-header"><h2>推荐广告位</h2></div>
-    <div id="homeAdsTiles" class="ads-tiles"></div>
+    <div id="homeAdsTiles" class="grid grid-4"></div>
   </section>
+
+  <!-- 两列内容布局 -->
   <section class="section grid grid-2">
     <div>
       <div class="section-header"><h2>最新动态</h2><a href="/news.html" class="more-link">更多 ></a></div>
-      <div class="page-size-row">每页 <select id="homeNewsPageSize" onchange="siteApp.updateHomeNewsPageSize(this.value)"><option value="15" selected>15</option><option value="30">30</option><option value="50">50</option></select> 条</div>
+      <div class="page-size-row">每页 <select id="homeNewsPageSize" onchange="siteApp.updateHomeNewsPageSize(this.value)"><option value="10" selected>10</option><option value="20">20</option><option value="30">30</option></select></div>
       <ul class="list" id="homeNews"></ul>
       <div id="homeNewsPager" class="pager-wrap"></div>
     </div>
     <div>
       <div class="section-header"><h2>专家展示</h2><a href="/experts.html" class="more-link">更多 ></a></div>
-      <div class="page-size-row">每页 <select id="homeExpertsPageSize" onchange="siteApp.updateHomeExpertsPageSize(this.value)"><option value="15" selected>15</option><option value="30">30</option><option value="50">50</option></select> 条</div>
-      <div id="homeExperts" class="expert-list"></div>
+      <div class="page-size-row">每页 <select id="homeExpertsPageSize" onchange="siteApp.updateHomeExpertsPageSize(this.value)"><option value="6" selected>6</option><option value="12">12</option></select></div>
+      <div id="homeExperts" class="grid grid-2"></div>
       <div id="homeExpertsPager" class="pager-wrap"></div>
     </div>
   </section>
+
+  <!-- 矿权融资 -->
   <section class="section">
     <div class="section-header"><h2>矿权融资</h2><a href="/finance.html" class="more-link">更多 ></a></div>
-    <div class="page-size-row">每页 <select id="homeMiningPageSize" onchange="siteApp.updateHomeMiningPageSize(this.value)"><option value="15" selected>15</option><option value="30">30</option><option value="50">50</option></select> 条</div>
-    <div id="homeMining" class="cards"></div>
+    <div class="page-size-row">每页 <select id="homeMiningPageSize" onchange="siteApp.updateHomeMiningPageSize(this.value)"><option value="12" selected>12</option><option value="20">20</option></select></div>
+    <div id="homeMining" class="grid grid-3"></div>
     <div id="homeMiningPager" class="pager-wrap"></div>
   </section>
+
+  <!-- 中间轮播 -->
   <section class="section small-banner" id="middleBanner"></section>
+
+  <!-- 市场行情 -->
+  <section class="section">
+    <div class="section-header"><h2>市场行情</h2><a href="/market.html" class="more-link">更多 ></a></div>
+    <div id="homeMarket" class="grid grid-3"></div>
+  </section>
+
+  <!-- 矿业学堂 -->
+  <section class="section">
+    <div class="section-header"><h2>矿业学堂</h2><a href="/academy.html" class="more-link">更多 ></a></div>
+    <div id="homeAcademy" class="grid grid-4"></div>
+  </section>
+
+  <!-- 供求商机 -->
+  <section class="section">
+    <div class="section-header"><h2>供求商机</h2><a href="/supply-demand.html" class="more-link">更多 ></a></div>
+    <div id="homeSupply" class="grid grid-3"></div>
+  </section>
 </div>
-<script src="/assets/site.js"></script><script>siteApp.loadHome();</script>
+
+<!-- 右侧在线联系栏 -->
+<div class="sidebar-right">
+  <a href="#" class="contact-btn contact-wechat" onclick="siteApp.showContactModal('wechat')" title="微信客服">💬</a>
+  <a href="#" class="contact-btn contact-qq" onclick="siteApp.showContactModal('qq')" title="QQ客服">QQ</a>
+  <a href="tel:4008-666-888" class="contact-btn contact-phone" title="服务热线">☎</a>
+</div>
+
+<!-- 联系模态框 -->
+<div class="overlay" id="contactOverlay" onclick="siteApp.closeContactModal()"></div>
+<div class="contact-modal" id="wechatModal">
+  <button class="contact-modal-close" onclick="siteApp.closeContactModal()">×</button>
+  <h3 style="text-align: center; margin-bottom: 16px;">微信客服</h3>
+  <img src="/assets/images/wechat-qr.png" alt="微信二维码" style="width: 100%; max-width: 250px;">
+  <p style="text-align: center; color: #666; margin-top: 12px; font-size: 12px;">扫描二维码添加微信客服</p>
+</div>
+<div class="contact-modal" id="qqModal">
+  <button class="contact-modal-close" onclick="siteApp.closeContactModal()">×</button>
+  <h3 style="text-align: center; margin-bottom: 16px;">QQ客服</h3>
+  <div class="contact-modal-phone">400-8666-888</div>
+  <p style="text-align: center; color: #666; margin-top: 12px;">点击下方按钮直接联系</p>
+  <div style="text-align: center; margin-top: 16px;">
+    <a href="mq://send/?uin=123456789&site=im.qq.com" class="btn btn-primary">点击进入QQ</a>
+  </div>
+</div>
+
+<script src="/assets/site.js"></script>
+<script>
+  siteApp.loadHome();
+  // 初始化右侧联系栏
+  document.addEventListener('DOMContentLoaded', function() {
+    siteApp.initContactBar();
+  });
+</script>
 <script src="/assets/layout_footer.js"></script>
-</body></html>
+
+</body>
+</html>

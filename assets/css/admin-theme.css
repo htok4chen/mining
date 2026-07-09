@@ -1,0 +1,554 @@
+/* ================================================================
+   后台管理系统 - UI风格升级
+   ================================================================ */
+
+:root {
+  --admin-primary: #e63946;
+  --admin-secondary: #f4d35e;
+  --admin-accent: #fcd5ce;
+  --admin-sidebar-bg: #1a1f2e;
+  --admin-header-bg: #ffffff;
+  --admin-text: #2d3142;
+  --admin-border: #e0e0e0;
+}
+
+/* 登录页 */
+.adm-login-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #e63946 0%, #f4d35e 100%);
+}
+
+.adm-login-box {
+  background-color: var(--admin-header-bg);
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  width: 100%;
+  max-width: 400px;
+}
+
+.adm-login-logo {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.adm-login-logo h1 {
+  color: var(--admin-primary);
+  font-size: 28px;
+  margin-bottom: 10px;
+}
+
+.adm-login-logo p {
+  color: var(--admin-text-light, #666);
+  font-size: 14px;
+}
+
+.adm-form-row {
+  margin-bottom: 16px;
+}
+
+.adm-form-row label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--admin-text);
+}
+
+.adm-input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--admin-border);
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.adm-input:focus {
+  outline: none;
+  border-color: var(--admin-primary);
+  box-shadow: 0 0 0 3px rgba(230, 57, 70, 0.1);
+}
+
+.btn-login {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--admin-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.btn-login:hover {
+  background-color: #d42d3d;
+  box-shadow: 0 4px 12px rgba(230, 57, 70, 0.3);
+}
+
+.btn-login:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* 管理系统布局 */
+.adm-layout {
+  display: flex;
+  height: 100vh;
+  background-color: var(--admin-bg, #f5f5f5);
+}
+
+.adm-sidebar {
+  width: 220px;
+  background-color: var(--admin-sidebar-bg);
+  color: white;
+  overflow-y: auto;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.adm-sidebar-logo {
+  padding: 20px;
+  border-bottom: 2px solid var(--admin-secondary);
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--admin-secondary);
+}
+
+.adm-sidebar-logo small {
+  display: block;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 4px;
+}
+
+.adm-nav {
+  padding: 10px 0;
+}
+
+.adm-nav-group {
+  margin-bottom: 10px;
+}
+
+.adm-nav-group-hdr {
+  padding: 12px 16px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s ease;
+  user-select: none;
+}
+
+.adm-nav-group-hdr:hover {
+  background-color: rgba(230, 57, 70, 0.2);
+  color: white;
+}
+
+.adm-caret {
+  font-size: 12px;
+}
+
+.adm-nav-items {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.adm-nav-items.open {
+  max-height: 500px;
+}
+
+.adm-nav-item {
+  display: block;
+  padding: 10px 32px;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border-left: 3px solid transparent;
+}
+
+.adm-nav-item:hover {
+  background-color: rgba(230, 57, 70, 0.1);
+  color: white;
+  border-left-color: var(--admin-secondary);
+}
+
+.adm-nav-item.active {
+  background-color: var(--admin-primary);
+  color: white;
+  border-left-color: var(--admin-secondary);
+}
+
+.adm-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.adm-header {
+  background-color: var(--admin-header-bg);
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--admin-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.adm-breadcrumb {
+  color: var(--admin-text);
+  font-weight: 500;
+}
+
+.adm-header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.btn-logout {
+  padding: 8px 16px;
+  background-color: var(--admin-primary);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.btn-logout:hover {
+  background-color: #d42d3d;
+}
+
+.adm-main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.adm-search-bar {
+  background-color: white;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.adm-search-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.adm-toolbar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.adm-table-wrap {
+  background-color: white;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.adm-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.adm-table thead {
+  background-color: var(--admin-secondary);
+}
+
+.adm-table th {
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--admin-text);
+  border-bottom: 2px solid var(--admin-border);
+}
+
+.adm-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--admin-border);
+}
+
+.adm-table tbody tr:hover {
+  background-color: rgba(244, 211, 94, 0.05);
+}
+
+.adm-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-on {
+  background-color: rgba(34, 164, 71, 0.1);
+  color: #22a447;
+}
+
+.badge-off {
+  background-color: rgba(230, 57, 70, 0.1);
+  color: var(--admin-primary);
+}
+
+.badge-pending {
+  background-color: rgba(255, 152, 0, 0.1);
+  color: #ff9800;
+}
+
+.adm-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-default {
+  background-color: var(--admin-border);
+  color: var(--admin-text);
+}
+
+.btn-default:hover {
+  background-color: #d0d0d0;
+}
+
+.btn-primary {
+  background-color: var(--admin-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #d42d3d;
+}
+
+.btn-warn {
+  background-color: var(--admin-secondary);
+  color: var(--admin-text);
+}
+
+.btn-warn:hover {
+  background-color: #f0c945;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-on {
+  background-color: #22a447;
+  color: white;
+}
+
+.btn-off {
+  background-color: var(--admin-primary);
+  color: white;
+}
+
+/* 模态框 */
+.adm-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.adm-modal {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.adm-modal-sm {
+  max-width: 400px;
+}
+
+.adm-modal-hdr {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--admin-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: var(--admin-text);
+}
+
+.adm-modal-close {
+  background: none;
+  border: none;
+  font-size: 24px;
+  color: var(--admin-text-light, #666);
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.adm-modal-close:hover {
+  color: var(--admin-primary);
+}
+
+.adm-modal-body {
+  padding: 24px;
+}
+
+.adm-modal-ftr {
+  padding: 16px 24px;
+  border-top: 1px solid var(--admin-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* 吐司 */
+.adm-toasts {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 2000;
+}
+
+.adm-toast {
+  background-color: white;
+  padding: 16px 20px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  margin-bottom: 10px;
+  border-left: 4px solid var(--admin-secondary);
+  opacity: 0;
+  transform: translateX(100px);
+  transition: all 0.3s ease;
+}
+
+.adm-toast.show {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.adm-toast-success {
+  border-left-color: #22a447;
+}
+
+.adm-toast-error {
+  border-left-color: var(--admin-primary);
+}
+
+/* 空状态 */
+.adm-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--admin-text-light, #666);
+}
+
+.adm-empty-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+/* 分页 */
+.adm-pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+}
+
+.adm-pag-info {
+  color: var(--admin-text-light, #666);
+  font-size: 14px;
+}
+
+.adm-pag-btn {
+  padding: 8px 12px;
+  border: 1px solid var(--admin-border);
+  background-color: white;
+  color: var(--admin-primary);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.adm-pag-btn:hover {
+  background-color: var(--admin-primary);
+  color: white;
+}
+
+.adm-pag-btn.active {
+  background-color: var(--admin-primary);
+  color: white;
+  border-color: var(--admin-primary);
+}
+
+/* 响应式 */
+@media (max-width: 768px) {
+  .adm-layout {
+    flex-direction: column;
+  }
+
+  .adm-sidebar {
+    width: 100%;
+    height: auto;
+  }
+
+  .adm-main {
+    padding: 16px;
+  }
+
+  .adm-search-form {
+    flex-direction: column;
+  }
+
+  .adm-search-form input,
+  .adm-search-form select {
+    width: 100%;
+  }
+
+  .adm-table {
+    font-size: 12px;
+  }
+
+  .adm-table th,
+  .adm-table td {
+    padding: 8px;
+  }
+
+  .adm-actions {
+    flex-direction: column;
+  }
+}
